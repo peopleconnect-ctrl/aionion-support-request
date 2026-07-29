@@ -335,6 +335,9 @@ Automated notification from Corporate Support Portal.
       setPasscodeInput('')
       setPasscodeError(false)
       setViewMode('admin')
+      if (window.location.pathname !== '/admin') {
+        window.history.replaceState(null, '', '/admin')
+      }
     } else {
       setPasscodeError(true)
     }
@@ -343,6 +346,9 @@ Automated notification from Corporate Support Portal.
   const handleOpenAdminPortal = () => {
     if (isAdminAuthenticated) {
       setViewMode('admin')
+      if (window.location.pathname !== '/admin') {
+        window.history.replaceState(null, '', '/admin')
+      }
     } else {
       setShowPasscodeModal(true)
     }
@@ -351,16 +357,20 @@ Automated notification from Corporate Support Portal.
   const handleLogoutAdmin = () => {
     setIsAdminAuthenticated(false)
     setViewMode('form')
-    // Reset URL if admin query parameter was used
-    if (window.location.search.includes('admin=true') || window.location.hash === '#admin') {
-      window.history.replaceState(null, '', window.location.pathname)
-    }
+    // Reset URL to root on logout
+    window.history.replaceState(null, '', '/')
   }
 
-  // Auto-detect ?admin=true or #admin in URL, or keyboard shortcut Ctrl + Shift + A
+  // Auto-detect /admin, ?admin=true, or #admin in URL, or keyboard shortcut Ctrl + Shift + A
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search)
-    if (searchParams.get('admin') === 'true' || window.location.hash === '#admin') {
+    const isAdminRoute =
+      window.location.pathname.toLowerCase() === '/admin' ||
+      window.location.pathname.toLowerCase() === '/admin/' ||
+      searchParams.get('admin') === 'true' ||
+      window.location.hash === '#admin'
+
+    if (isAdminRoute && !isAdminAuthenticated) {
       setShowPasscodeModal(true)
     }
 
