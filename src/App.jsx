@@ -195,31 +195,49 @@ function App() {
         if (otherRequirementText) finalCategoryString = `Other Requirement: ${otherRequirementText}`
       }
 
+      const newRecord = {
+        reference_id: generatedId,
+        full_name: formData.fullName,
+        employee_code: formData.employeeCode,
+        department: formData.department,
+        email: formData.email,
+        contact_number: formData.contactNumber,
+        branch_location: formData.branchLocation,
+        request_category: finalCategoryString,
+        target_audience: formData.targetAudience,
+        purpose_of_request: formData.purposeOfRequest,
+        required_by: formData.requiredBy,
+        priority_level: formData.priorityLevel,
+        approver_name: formData.approverName,
+        approver_email: formData.approverEmail,
+        approver_department: formData.approverDepartment,
+        reference_file_urls: refFileUrls,
+        approval_file_urls: approvalFileUrls,
+        status: 'Pending',
+        created_at: new Date().toISOString()
+      }
+
+      // Save to localStorage as instant fallback
+      try {
+        const existingLocal = JSON.parse(localStorage.getItem('aionion_support_requests') || '[]')
+        localStorage.setItem('aionion_support_requests', JSON.stringify([newRecord, ...existingLocal]))
+      } catch (err) {
+        console.warn('LocalStorage save error:', err)
+      }
+
       // Insert record into Supabase support_requests table
       if (supabase) {
-        await supabase.from('support_requests').insert([{
-          reference_id: generatedId,
-          full_name: formData.fullName,
-          employee_code: formData.employeeCode,
-          department: formData.department,
-          email: formData.email,
-          contact_number: formData.contactNumber,
-          branch_location: formData.branchLocation,
-          request_category: finalCategoryString,
-          target_audience: formData.targetAudience,
-          purpose_of_request: formData.purposeOfRequest,
-          required_by: formData.requiredBy,
-          priority_level: formData.priorityLevel,
-          approver_name: formData.approverName,
-          approver_email: formData.approverEmail,
-          approver_department: formData.approverDepartment,
-          reference_file_urls: refFileUrls,
-          approval_file_urls: approvalFileUrls,
-          status: 'Pending'
-        }])
+        try {
+          const { error } = await supabase.from('support_requests').insert([newRecord])
+          if (error) {
+            console.error('Supabase Insert Error:', error.message)
+          }
+        } catch (e) {
+          console.warn('Supabase insert notice:', e)
+        }
       }
     } catch (err) {
-      console.warn('Supabase storage or insert notice:', err)
+      console.warn('Submission notice:', err)
     } finally {
       setIsSubmitting(false)
       setSubmittedRefId(generatedId)

@@ -37,9 +37,12 @@ export default function AdminDashboard({ onSwitchToForm, onLogout }) {
   const [isSaving, setIsSaving] = useState(false)
   const deliverableInputRef = useRef(null)
 
-  // Fetch Requests from Supabase
+  // Fetch Requests from Supabase (with localStorage fallback)
   const fetchRequests = async () => {
     setLoading(true)
+    let fetchedData = []
+    let supabaseSuccess = false
+
     try {
       if (supabase) {
         const { data, error } = await supabase
@@ -48,16 +51,30 @@ export default function AdminDashboard({ onSwitchToForm, onLogout }) {
           .order('created_at', { ascending: false })
 
         if (!error && data) {
-          setRequests(data)
-          setLoading(false)
-          return
+          fetchedData = data
+          supabaseSuccess = true
+        } else if (error) {
+          console.warn('Supabase fetch error:', error.message)
         }
       }
     } catch (err) {
       console.warn('Error fetching requests from Supabase:', err)
     }
 
-    setRequests([])
+    // Merge with local storage fallback
+    try {
+      const localData = JSON.parse(localStorage.getItem('aionion_support_requests') || '[]')
+      if (localData.length > 0) {
+        // Combine Supabase and local storage without duplicates
+        const existingRefIds = new Set(fetchedData.map((item) => item.reference_id))
+        const missingLocal = localData.filter((item) => !existingRefIds.has(item.reference_id))
+        fetchedData = [...fetchedData, ...missingLocal]
+      }
+    } catch (e) {
+      console.warn('LocalStorage load notice:', e)
+    }
+
+    setRequests(fetchedData)
     setLoading(false)
   }
 
