@@ -942,14 +942,16 @@ Aionion Capital
                         const fileName = typeof file === 'object' ? file.name : `Reference File #${i + 1}`
                         const fileUrl = typeof file === 'object' ? file.url : file
                         return (
-                          <li key={i} style={{ marginBottom: '4px', fontSize: '13px' }}>
+                          <li key={i} style={{ marginBottom: '6px', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#f8fafc', padding: '6px 10px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                            <span style={{ fontWeight: '600', color: '#1e293b' }}>📄 {fileName}</span>
                             <a
                               href={fileUrl !== '#' ? fileUrl : undefined}
+                              download={fileName}
                               target="_blank"
                               rel="noreferrer"
-                              style={{ color: '#0038FF', fontWeight: '600', textDecoration: 'underline' }}
+                              style={{ background: '#0038FF', color: '#ffffff', padding: '4px 10px', borderRadius: '4px', textDecoration: 'none', fontWeight: 'bold', fontSize: '12px' }}
                             >
-                              📎 {fileName}
+                              📥 Download
                             </a>
                           </li>
                         )
@@ -967,14 +969,16 @@ Aionion Capital
                         const fileName = typeof file === 'object' ? file.name : `Approval Proof #${i + 1}`
                         const fileUrl = typeof file === 'object' ? file.url : file
                         return (
-                          <li key={i} style={{ marginBottom: '4px', fontSize: '13px' }}>
+                          <li key={i} style={{ marginBottom: '6px', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#f0fdf4', padding: '6px 10px', borderRadius: '6px', border: '1px solid #dcfce7' }}>
+                            <span style={{ fontWeight: '600', color: '#166534' }}>🛡️ {fileName}</span>
                             <a
                               href={fileUrl !== '#' ? fileUrl : undefined}
+                              download={fileName}
                               target="_blank"
                               rel="noreferrer"
-                              style={{ color: '#059669', fontWeight: '600', textDecoration: 'underline' }}
+                              style={{ background: '#16a34a', color: '#ffffff', padding: '4px 10px', borderRadius: '4px', textDecoration: 'none', fontWeight: 'bold', fontSize: '12px' }}
                             >
-                              🛡️ {fileName}
+                              📥 Download
                             </a>
                           </li>
                         )
@@ -1047,10 +1051,10 @@ Aionion Capital
                   {deliverableFiles.length > 0 && (
                     <div className="deliverable-list">
                       {deliverableFiles.map((fileItem, idx) => (
-                        <div key={idx} className="deliverable-item">
-                          <span>✅ {fileItem.name || `Deliverable #${idx + 1}`}</span>
-                          <a href={fileItem.url} target="_blank" rel="noreferrer" className="link-text">
-                            View File
+                        <div key={idx} className="deliverable-item" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#f0fdf4', padding: '8px 12px', borderRadius: '6px', border: '1px solid #dcfce7', marginTop: '6px' }}>
+                          <span style={{ fontWeight: '600', color: '#166534', fontSize: '13px' }}>✅ {fileItem.name || `Deliverable #${idx + 1}`}</span>
+                          <a href={fileItem.url} download={fileItem.name || 'deliverable'} target="_blank" rel="noreferrer" style={{ background: '#16a34a', color: '#ffffff', padding: '5px 12px', borderRadius: '4px', textDecoration: 'none', fontWeight: 'bold', fontSize: '12px' }}>
+                            📥 Download File
                           </a>
                         </div>
                       ))}

@@ -39,7 +39,7 @@ export default async function handler(req, res) {
     }
 
     // -------------------------------------------------------------
-    // ACTION A: MANUAL STATUS UPDATE EMAIL DISPATCH (In Progress / Completed)
+    // ACTION A: STATUS UPDATE EMAIL DISPATCH (In Progress / Completed)
     // -------------------------------------------------------------
     if (data.action === 'status_update') {
       const isDone = data.status === 'Completed'
@@ -55,11 +55,16 @@ export default async function handler(req, res) {
       let deliverableHtml = ''
       if (data.deliverable_files && data.deliverable_files.length > 0) {
         deliverableHtml = `
-          <div style="margin-top: 15px; padding: 14px; background: #f0fdf4; border-left: 4px solid #16a34a; border-radius: 6px;">
-            <h4 style="margin: 0 0 8px 0; color: #166534; font-size: 14px;">Completed Deliverables / Files:</h4>
-            <ul style="margin: 0; padding-left: 20px; font-size: 14px;">
-              ${data.deliverable_files.map((f, i) => `<li><a href="${f.url}" target="_blank" style="color: #15803d; font-weight: bold; text-decoration: none;">${f.name || `Deliverable #${i + 1}`}</a></li>`).join('')}
-            </ul>
+          <div style="margin-top: 18px; padding: 16px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px;">
+            <h4 style="margin: 0 0 12px 0; color: #166534; font-size: 14px; font-weight: bold;">📥 Download Completed Deliverables / Files:</h4>
+            ${data.deliverable_files.map((f, i) => `
+              <div style="padding: 10px 14px; background: #ffffff; border: 1px solid #dcfce7; border-radius: 6px; margin-bottom: 8px; font-size: 13px;">
+                <div style="font-weight: bold; color: #14532d; margin-bottom: 6px;">📄 ${f.name || `Deliverable #${i + 1}`}</div>
+                <a href="${f.url}" download="${f.name || 'deliverable'}" target="_blank" style="background: #16a34a; color: #ffffff; padding: 7px 16px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 12px; display: inline-block;">
+                  📥 Click to Download File
+                </a>
+              </div>
+            `).join('')}
           </div>
         `
       }
@@ -139,7 +144,32 @@ export default async function handler(req, res) {
       }
     }
 
-    // 3. Send Professional Acknowledgement Email via Google SMTP
+    // 3. Render Downloadable Attached Files for New Request
+    const allRequesterFiles = [
+      ...(data.reference_file_urls || []),
+      ...(data.approval_file_urls || [])
+    ]
+
+    let requesterFilesHtml = ''
+    if (allRequesterFiles.length > 0) {
+      requesterFilesHtml = `
+        <h3 style="color: #0038FF; font-size: 14px; border-bottom: 2px solid #eff6ff; padding-bottom: 8px; margin-top: 24px; text-transform: uppercase; letter-spacing: 0.5px;">
+          📎 Requester Attached Files / Artwork References
+        </h3>
+        <div style="margin-bottom: 20px;">
+          ${allRequesterFiles.map((f, i) => `
+            <div style="padding: 10px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 8px; font-size: 13px;">
+              <div style="font-weight: bold; color: #334155; margin-bottom: 6px;">📄 ${f.name || `Attachment #${i + 1}`}</div>
+              <a href="${f.url}" download="${f.name || 'attachment'}" target="_blank" style="background: #0038FF; color: #ffffff; padding: 6px 14px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 12px; display: inline-block;">
+                📥 Download Attachment
+              </a>
+            </div>
+          `).join('')}
+        </div>
+      `
+    }
+
+    // 4. Send Professional Acknowledgement Email via Google SMTP
     const requesterEmail = data.email || 'peopleconnect@aionioncapital.com'
     const ccList = [
       'peopleconnect@aionioncapital.com',
@@ -174,6 +204,8 @@ export default async function handler(req, res) {
             <tr><td style="padding: 6px 0; color: #64748b;">Approver Name:</td><td style="padding: 6px 0;">${data.approver_name} (${data.approver_department})</td></tr>
             <tr><td style="padding: 6px 0; color: #64748b; vertical-align: top;">Purpose of Request:</td><td style="padding: 8px 12px; background: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0;">${data.purpose_of_request}</td></tr>
           </table>
+
+          ${requesterFilesHtml}
 
           <div style="text-align: center; margin: 28px 0 10px 0;">
             <a href="https://aionion-support-request.vercel.app/admin" style="background: #0038FF; color: #ffffff; padding: 12px 26px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 14px;">
