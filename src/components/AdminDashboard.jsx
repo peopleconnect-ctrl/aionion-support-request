@@ -163,40 +163,74 @@ export default function AdminDashboard({ onSwitchToForm, onLogout }) {
     setIsUploading(false)
   }
 
+  // Helper to convert Base64 Data URL to Blob object
+  const dataURLtoBlob = (dataurl) => {
+    try {
+      const arr = dataurl.split(',')
+      const mimeMatch = arr[0].match(/:(.*?);/)
+      const mime = mimeMatch ? mimeMatch[1] : 'application/octet-stream'
+      const bstr = atob(arr[1])
+      let n = bstr.length
+      const u8arr = new Uint8Array(n)
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n)
+      }
+      return new Blob([u8arr], { type: mime })
+    } catch (e) {
+      console.warn('dataURLtoBlob conversion error:', e)
+      return null
+    }
+  }
+
   // Programmatic File Download and Preview Handlers
   const handleDownloadFile = (url, name) => {
     if (!url || url === '#') return
+    let targetUrl = url
+    let tempBlobUrl = null
+
+    if (url.startsWith('data:')) {
+      const blob = dataURLtoBlob(url)
+      if (blob) {
+        tempBlobUrl = URL.createObjectURL(blob)
+        targetUrl = tempBlobUrl
+      }
+    }
+
     try {
       const link = document.createElement('a')
-      link.href = url
-      link.download = name || 'file'
+      link.href = targetUrl
+      link.download = name || 'attachment'
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
     } catch (err) {
       console.warn('Download error:', err)
-      window.open(url, '_blank')
+      window.open(targetUrl, '_blank')
+    }
+
+    if (tempBlobUrl) {
+      setTimeout(() => URL.revokeObjectURL(tempBlobUrl), 10000)
     }
   }
 
-  const handleViewFile = (url) => {
+  const handleViewFile = (url, name) => {
     if (!url || url === '#') return
+    let targetUrl = url
+    let tempBlobUrl = null
+
     if (url.startsWith('data:')) {
-      const win = window.open()
-      if (win) {
-        win.document.write(`
-          <!DOCTYPE html>
-          <html>
-            <head><title>File Preview</title></head>
-            <body style="margin:0; background:#0f172a; display:flex; align-items:center; justify-content:center; height:100vh;">
-              <iframe src="${url}" style="width:100%; height:100%; border:none;"></iframe>
-            </body>
-          </html>
-        `)
-        return
+      const blob = dataURLtoBlob(url)
+      if (blob) {
+        tempBlobUrl = URL.createObjectURL(blob)
+        targetUrl = tempBlobUrl
       }
     }
-    window.open(url, '_blank')
+
+    window.open(targetUrl, '_blank')
+
+    if (tempBlobUrl) {
+      setTimeout(() => URL.revokeObjectURL(tempBlobUrl), 60000)
+    }
   }
 
   // Save Updates & Trigger Completion Email
