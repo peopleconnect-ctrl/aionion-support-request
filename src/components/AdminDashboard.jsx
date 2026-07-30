@@ -346,17 +346,6 @@ Corporate Communications Team
 Aionion Capital
 `
 
-      const sanitizeFileUrlsForEmail = (fileArray) => {
-        if (!fileArray || !Array.isArray(fileArray)) return []
-        return fileArray.map((f) => {
-          const fileUrl = f.url || (typeof f === 'string' ? f : '#')
-          if (fileUrl && fileUrl.startsWith('data:') && fileUrl.length > 1000000) {
-            return { name: f.name || 'Deliverable', url: '#' }
-          }
-          return f
-        })
-      }
-
       try {
         // Trigger Google Workspace SMTP email dispatch via Vercel API
         await fetch('/api/submit-request', {
@@ -371,7 +360,7 @@ Aionion Capital
             request_category: selectedReq.request_category,
             status: nextStatus,
             completion_notes: completionNotes,
-            deliverable_files: sanitizeFileUrlsForEmail(deliverableFiles)
+            deliverable_files: deliverableFiles
           })
         })
       } catch (notifyErr) {

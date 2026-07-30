@@ -100,34 +100,32 @@ export default async function handler(req, res) {
         `
 
         data.deliverable_files.forEach((f, i) => {
-          const fileName = f.name || `Deliverable #${i + 1}`
-          const fileUrl = f.url || (typeof f === 'string' ? f : null)
+          const fileName = f.name || `Deliverable_${i + 1}`
+          let fileUrl = f.url || (typeof f === 'string' ? f : null)
           const cidName = `deliverable_file_${i}`
 
           if (fileUrl && fileUrl !== '#') {
             if (fileUrl.startsWith('data:')) {
-              const matches = fileUrl.match(/^data:(.+?);base64,(.+)$/)
-              if (matches) {
-                const mimeType = matches[1] || 'application/octet-stream'
-                const base64Data = matches[2]
+              const mimeMatch = fileUrl.match(/^data:(.+?);base64,/)
+              const mimeType = mimeMatch ? mimeMatch[1] : 'application/octet-stream'
+              const base64Data = fileUrl.replace(/^data:(.+?);base64,/, '')
 
-                mailAttachments.push({
-                  filename: fileName,
-                  content: Buffer.from(base64Data, 'base64'),
-                  contentType: mimeType,
-                  cid: cidName
-                })
+              mailAttachments.push({
+                filename: fileName,
+                content: Buffer.from(base64Data, 'base64'),
+                contentType: mimeType,
+                cid: cidName
+              })
 
-                deliverableHtml += `
-                  <div style="padding: 12px; background: #ffffff; border: 1px solid #dcfce7; border-radius: 6px; margin-bottom: 10px;">
-                    <div style="font-weight: bold; color: #14532d; margin-bottom: 6px; font-size: 13px;">📄 ${fileName}</div>
-                    ${mimeType.startsWith('image/') ? `<div style="margin: 8px 0;"><img src="cid:${cidName}" alt="${fileName}" style="max-width: 100%; max-height: 280px; border-radius: 6px; border: 1px solid #bbf7d0;" /></div>` : ''}
-                    <div style="font-size: 12px; color: #16a34a; font-weight: bold;">
-                      📎 Attached to this email (Check email attachment bar to download)
-                    </div>
+              deliverableHtml += `
+                <div style="padding: 12px; background: #ffffff; border: 1px solid #dcfce7; border-radius: 6px; margin-bottom: 10px;">
+                  <div style="font-weight: bold; color: #14532d; margin-bottom: 6px; font-size: 13px;">📄 ${fileName}</div>
+                  ${mimeType.startsWith('image/') ? `<div style="margin: 8px 0;"><img src="cid:${cidName}" alt="${fileName}" style="max-width: 100%; max-height: 280px; border-radius: 6px; border: 1px solid #bbf7d0;" /></div>` : ''}
+                  <div style="font-size: 12px; color: #16a34a; font-weight: bold;">
+                    📎 Attached to this email (Check email attachment bar to download)
                   </div>
-                `
-              }
+                </div>
+              `
             } else if (fileUrl.startsWith('http')) {
               mailAttachments.push({
                 filename: fileName,
