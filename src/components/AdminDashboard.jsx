@@ -123,7 +123,16 @@ export default function AdminDashboard({ onSwitchToForm, onLogout }) {
     setIsUploading(true)
     const newUrls = [...deliverableFiles]
 
+    const fileToDataUrl = (file) =>
+      new Promise((resolve) => {
+        const reader = new FileReader()
+        reader.onload = (e) => resolve(e.target.result)
+        reader.onerror = () => resolve('#')
+        reader.readAsDataURL(file)
+      })
+
     for (const file of Array.from(files)) {
+      let publicUrl = null
       if (supabase) {
         try {
           const fileExt = file.name.split('.').pop()
@@ -137,21 +146,57 @@ export default function AdminDashboard({ onSwitchToForm, onLogout }) {
               .from('support-attachments')
               .getPublicUrl(filePath)
             if (publicUrlData?.publicUrl) {
-              newUrls.push({ name: file.name, url: publicUrlData.publicUrl })
+              publicUrl = publicUrlData.publicUrl
             }
-          } else {
-            newUrls.push({ name: file.name, url: URL.createObjectURL(file) })
           }
-        } catch {
-          newUrls.push({ name: file.name, url: URL.createObjectURL(file) })
+        } catch (err) {
+          console.warn('Deliverable storage notice:', err)
         }
-      } else {
-        newUrls.push({ name: file.name, url: URL.createObjectURL(file) })
       }
+      if (!publicUrl || publicUrl === '#') {
+        publicUrl = await fileToDataUrl(file)
+      }
+      newUrls.push({ name: file.name, url: publicUrl })
     }
 
     setDeliverableFiles(newUrls)
     setIsUploading(false)
+  }
+
+  // Programmatic File Download and Preview Handlers
+  const handleDownloadFile = (url, name) => {
+    if (!url || url === '#') return
+    try {
+      const link = document.createElement('a')
+      link.href = url
+      link.download = name || 'file'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    } catch (err) {
+      console.warn('Download error:', err)
+      window.open(url, '_blank')
+    }
+  }
+
+  const handleViewFile = (url) => {
+    if (!url || url === '#') return
+    if (url.startsWith('data:')) {
+      const win = window.open()
+      if (win) {
+        win.document.write(`
+          <!DOCTYPE html>
+          <html>
+            <head><title>File Preview</title></head>
+            <body style="margin:0; background:#0f172a; display:flex; align-items:center; justify-content:center; height:100vh;">
+              <iframe src="${url}" style="width:100%; height:100%; border:none;"></iframe>
+            </body>
+          </html>
+        `)
+        return
+      }
+    }
+    window.open(url, '_blank')
   }
 
   // Save Updates & Trigger Completion Email
@@ -942,17 +987,24 @@ Aionion Capital
                         const fileName = typeof file === 'object' ? file.name : `Reference File #${i + 1}`
                         const fileUrl = typeof file === 'object' ? file.url : file
                         return (
-                          <li key={i} style={{ marginBottom: '6px', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#f8fafc', padding: '6px 10px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
-                            <span style={{ fontWeight: '600', color: '#1e293b' }}>📄 {fileName}</span>
-                            <a
-                              href={fileUrl !== '#' ? fileUrl : undefined}
-                              download={fileName}
-                              target="_blank"
-                              rel="noreferrer"
-                              style={{ background: '#0038FF', color: '#ffffff', padding: '4px 10px', borderRadius: '4px', textDecoration: 'none', fontWeight: 'bold', fontSize: '12px' }}
-                            >
-                              📥 Download
-                            </a>
+                          <li key={i} style={{ marginBottom: '6px', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#f8fafc', padding: '8px 12px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                            <span style={{ fontWeight: '600', color: '#1e293b', flex: 1, marginRight: '8px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>📄 {fileName}</span>
+                            <div style={{ display: 'flex', gap: '6px' }}>
+                              <button
+                                type="button"
+                                onClick={() => handleViewFile(fileUrl)}
+                                style={{ background: '#f1f5f9', color: '#334155', border: '1px solid #cbd5e1', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
+                              >
+                                👁️ View
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDownloadFile(fileUrl, fileName)}
+                                style={{ background: '#0038FF', color: '#ffffff', border: 'none', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
+                              >
+                                📥 Download
+                              </button>
+                            </div>
                           </li>
                         )
                       })}
@@ -969,17 +1021,24 @@ Aionion Capital
                         const fileName = typeof file === 'object' ? file.name : `Approval Proof #${i + 1}`
                         const fileUrl = typeof file === 'object' ? file.url : file
                         return (
-                          <li key={i} style={{ marginBottom: '6px', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#f0fdf4', padding: '6px 10px', borderRadius: '6px', border: '1px solid #dcfce7' }}>
-                            <span style={{ fontWeight: '600', color: '#166534' }}>🛡️ {fileName}</span>
-                            <a
-                              href={fileUrl !== '#' ? fileUrl : undefined}
-                              download={fileName}
-                              target="_blank"
-                              rel="noreferrer"
-                              style={{ background: '#16a34a', color: '#ffffff', padding: '4px 10px', borderRadius: '4px', textDecoration: 'none', fontWeight: 'bold', fontSize: '12px' }}
-                            >
-                              📥 Download
-                            </a>
+                          <li key={i} style={{ marginBottom: '6px', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#f0fdf4', padding: '8px 12px', borderRadius: '6px', border: '1px solid #dcfce7' }}>
+                            <span style={{ fontWeight: '600', color: '#166534', flex: 1, marginRight: '8px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>🛡️ {fileName}</span>
+                            <div style={{ display: 'flex', gap: '6px' }}>
+                              <button
+                                type="button"
+                                onClick={() => handleViewFile(fileUrl)}
+                                style={{ background: '#ffffff', color: '#166534', border: '1px solid #bbf7d0', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
+                              >
+                                👁️ View
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDownloadFile(fileUrl, fileName)}
+                                style={{ background: '#16a34a', color: '#ffffff', border: 'none', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
+                              >
+                                📥 Download
+                              </button>
+                            </div>
                           </li>
                         )
                       })}
@@ -1052,10 +1111,23 @@ Aionion Capital
                     <div className="deliverable-list">
                       {deliverableFiles.map((fileItem, idx) => (
                         <div key={idx} className="deliverable-item" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#f0fdf4', padding: '8px 12px', borderRadius: '6px', border: '1px solid #dcfce7', marginTop: '6px' }}>
-                          <span style={{ fontWeight: '600', color: '#166534', fontSize: '13px' }}>✅ {fileItem.name || `Deliverable #${idx + 1}`}</span>
-                          <a href={fileItem.url} download={fileItem.name || 'deliverable'} target="_blank" rel="noreferrer" style={{ background: '#16a34a', color: '#ffffff', padding: '5px 12px', borderRadius: '4px', textDecoration: 'none', fontWeight: 'bold', fontSize: '12px' }}>
-                            📥 Download File
-                          </a>
+                          <span style={{ fontWeight: '600', color: '#166534', fontSize: '13px', flex: 1, marginRight: '8px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>✅ {fileItem.name || `Deliverable #${idx + 1}`}</span>
+                          <div style={{ display: 'flex', gap: '6px' }}>
+                            <button
+                              type="button"
+                              onClick={() => handleViewFile(fileItem.url)}
+                              style={{ background: '#ffffff', color: '#166534', border: '1px solid #bbf7d0', padding: '5px 12px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
+                            >
+                              👁️ View
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDownloadFile(fileItem.url, fileItem.name || 'deliverable')}
+                              style={{ background: '#16a34a', color: '#ffffff', border: 'none', padding: '5px 12px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
+                            >
+                              📥 Download
+                            </button>
+                          </div>
                         </div>
                       ))}
                     </div>

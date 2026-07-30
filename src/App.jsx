@@ -139,13 +139,21 @@ function App() {
     setIsSubmitting(true)
     const generatedId = `REQ-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`
 
+    const fileToDataUrl = (file) =>
+      new Promise((resolve) => {
+        const reader = new FileReader()
+        reader.onload = (e) => resolve(e.target.result)
+        reader.onerror = () => resolve('#')
+        reader.readAsDataURL(file)
+      })
+
     try {
       let refFileUrls = []
       let approvalFileUrls = []
 
       // Upload reference files
       for (const file of uploadedFiles) {
-        let publicUrl = '#'
+        let publicUrl = null
         if (supabase) {
           try {
             const fileExt = file.name.split('.').pop()
@@ -159,12 +167,15 @@ function App() {
             console.warn('Storage upload error:', e)
           }
         }
+        if (!publicUrl || publicUrl === '#') {
+          publicUrl = await fileToDataUrl(file)
+        }
         refFileUrls.push({ name: file.name, url: publicUrl })
       }
 
       // Upload approval proof files
       for (const file of approvalFiles) {
-        let publicUrl = '#'
+        let publicUrl = null
         if (supabase) {
           try {
             const fileExt = file.name.split('.').pop()
@@ -177,6 +188,9 @@ function App() {
           } catch (e) {
             console.warn('Storage upload error:', e)
           }
+        }
+        if (!publicUrl || publicUrl === '#') {
+          publicUrl = await fileToDataUrl(file)
         }
         approvalFileUrls.push({ name: file.name, url: publicUrl })
       }
