@@ -192,22 +192,31 @@ export default function AdminDashboard({ onSwitchToForm, onLogout }) {
       )
     )
 
-    if (isCompleting) {
-      const recipient = selectedReq.email
-      const ccRecipients = `${selectedReq.approver_email || ''},peopleconnect@aionioncapital.com`
+    if (nextStatus === 'Completed' || nextStatus === 'In Progress' || isCompleting) {
+      const requesterEmail = selectedReq.email
+      const ccList = [
+        'peopleconnect@aionioncapital.com',
+        'naveenkumar.k@aionioncapital.com',
+        'balakumar.elango@aionioncapital.com',
+        selectedReq.approver_email
+      ].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i && v !== requesterEmail).join(',')
 
       let fileLinksText = deliverableFiles.length > 0
         ? deliverableFiles.map((f, i) => `${i + 1}. ${f.name}: ${f.url}`).join('\n')
         : 'Deliverable files delivered directly / attached.'
 
+      const isDone = nextStatus === 'Completed'
+      const statusTitle = isDone ? 'WORK COMPLETED & DELIVERED' : 'STATUS UPDATE: IN PROGRESS'
+
       const bodyText = `
-WORK COMPLETED & DELIVERED
+${statusTitle}
 ========================================
 Reference ID    : ${selectedReq.reference_id}
 Requester Name  : ${selectedReq.full_name}
 Department      : ${selectedReq.department}
 Request Category: ${selectedReq.request_category}
-Date Completed  : ${new Date().toLocaleDateString('en-GB')}
+Status          : ${nextStatus}
+Date            : ${new Date().toLocaleDateString('en-GB')}
 
 👤 REQUESTER DETAILS
 ----------------------------------------
@@ -215,22 +224,22 @@ Official Email  : ${selectedReq.email}
 Contact Number  : ${selectedReq.contact_number || 'N/A'}
 Branch Location : ${selectedReq.branch_location || 'N/A'}
 
---- DELIVERY NOTES & INSTRUCTIONS ---
-${completionNotes || 'Your support request has been successfully completed by Corporate Communications team.'}
+--- NOTES & INSTRUCTIONS FROM TEAM ---
+${completionNotes || (isDone ? 'Your support request has been completed.' : 'Your request is currently being processed by Corporate Communications team.')}
 
---- COMPLETED DELIVERABLES / FILES ---
-${fileLinksText}
+${isDone ? `--- COMPLETED DELIVERABLES / FILES ---\n${fileLinksText}\n` : ''}
+--- APPROVER INFORMATION ---
+Approver Name   : ${selectedReq.approver_name || 'N/A'}
+Approver Email  : ${selectedReq.approver_email || 'N/A'}
 
 ========================================
-Corporate Communications & Support Team
+Corporate Communications Team
 Aionion Capital
 `
 
       try {
         const web3Key = '5eb1ae0b-b5ed-4fe3-9b22-275b57fadd01'
-        const recipients = recipient && recipient !== 'peopleconnect@aionioncapital.com'
-          ? `peopleconnect@aionioncapital.com,${recipient}`
-          : 'peopleconnect@aionioncapital.com'
+        const subjectTag = isDone ? '[WORK COMPLETED]' : '[STATUS UPDATE: IN PROGRESS]'
 
         await fetch('https://api.web3forms.com/submit', {
           method: 'POST',
@@ -240,15 +249,16 @@ Aionion Capital
           },
           body: JSON.stringify({
             access_key: web3Key,
-            subject: `[WORK COMPLETED] ${selectedReq.reference_id}: ${selectedReq.request_category} (${selectedReq.full_name})`,
-            from_name: 'Aionion Support Portal',
-            to_email: recipients,
+            subject: `${subjectTag} ${selectedReq.reference_id}: ${selectedReq.request_category} (${selectedReq.full_name})`,
+            from_name: 'PeopleConnect - Corporate Communications',
+            to_email: requesterEmail,
+            cc: ccList,
             replyto: 'peopleconnect@aionioncapital.com',
             message: bodyText
           })
         })
       } catch (notifyErr) {
-        console.warn('Completion notification dispatch error:', notifyErr)
+        console.warn('Status notification dispatch error:', notifyErr)
       }
     }
 
