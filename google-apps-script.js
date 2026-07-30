@@ -11,6 +11,32 @@
  * ========================================================
  */
 
+function testEmailAndSheet() {
+  var testData = {
+    reference_id: "TEST-REQ-1001",
+    full_name: "Test Requester",
+    employee_code: "AION-101",
+    department: "Corporate Communications",
+    email: "peopleconnect@aionioncapital.com",
+    contact_number: "+91 9876543210",
+    branch_location: "Chennai",
+    request_category: "Visiting card",
+    target_audience: "Internal Employees",
+    purpose_of_request: "Testing automated email and Google Sheet logging",
+    required_by: "2026-07-30",
+    priority_level: "Normal",
+    approver_name: "Naveen Kumar",
+    approver_email: "naveenkumar.k@aionioncapital.com",
+    approver_department: "Management",
+    status: "Pending",
+    created_at: new Date().toISOString()
+  };
+  
+  var e = { postData: { contents: JSON.stringify(testData) } };
+  var response = doPost(e);
+  Logger.log("Test execution result: " + response.getContent());
+}
+
 function doPost(e) {
   try {
     var data = JSON.parse(e.postData.contents);
