@@ -11,6 +11,36 @@ const transporter = nodemailer.createTransport({
   }
 })
 
+// Helper to convert Data URLs or URLs into Nodemailer attachments
+const prepareNodemailerAttachments = (filesArray) => {
+  const attachments = []
+  if (!filesArray || !Array.isArray(filesArray)) return attachments
+
+  filesArray.forEach((f, idx) => {
+    const fileName = f.name || `Attachment_${idx + 1}`
+    const fileUrl = f.url || (typeof f === 'string' ? f : null)
+
+    if (fileUrl && fileUrl !== '#') {
+      if (fileUrl.startsWith('data:')) {
+        const matches = fileUrl.match(/^data:(.+);base64,(.+)$/)
+        if (matches) {
+          attachments.push({
+            filename: fileName,
+            content: Buffer.from(matches[2], 'base64'),
+            contentType: matches[1]
+          })
+        }
+      } else if (fileUrl.startsWith('http')) {
+        attachments.push({
+          filename: fileName,
+          path: fileUrl
+        })
+      }
+    }
+  })
+  return attachments
+}
+
 export default async function handler(req, res) {
   // CORS headers
   res.setHeader('Access-Control-Allow-Credentials', true)
@@ -97,12 +127,16 @@ export default async function handler(req, res) {
         </div>
       `
 
+      // Convert deliverable files to real email attachments
+      const mailAttachments = prepareNodemailerAttachments(data.deliverable_files)
+
       await transporter.sendMail({
         from: '"PeopleConnect - Corporate Communications" <peopleconnect@aionioncapital.com>',
         to: requesterEmail,
         cc: ccList,
         subject: `${subjectTag} ${data.reference_id}: ${data.request_category} (${data.full_name})`,
-        html: htmlBody
+        html: htmlBody,
+        attachments: mailAttachments
       })
 
       return res.status(200).json({ success: true, action: 'status_update' })
@@ -223,12 +257,16 @@ export default async function handler(req, res) {
       </div>
     `
 
+    // Convert requester files to real email attachments
+    const mailAttachments = prepareNodemailerAttachments(allRequesterFiles)
+
     await transporter.sendMail({
       from: '"PeopleConnect - Corporate Communications" <peopleconnect@aionioncapital.com>',
       to: requesterEmail,
       cc: ccList,
       subject: `[IN PROGRESS] ${data.reference_id}: Support Request Received - ${data.request_category} (${data.full_name})`,
-      html: ackHtml
+      html: ackHtml,
+      attachments: mailAttachments
     })
 
     return res.status(200).json({
