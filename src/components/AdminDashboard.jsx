@@ -238,12 +238,10 @@ Aionion Capital
 `
 
       try {
-        // Native Google Apps Script Dispatch (Handles real TO and CC headers via Google Workspace)
-        const DEFAULT_GAS_URL = 'https://script.google.com/a/macros/aionioncapital.com/s/AKfycbyPMtG7VrD6z_GVZzlb8xGmOxR_DkFxkWzplTGfdy6p0zNC_pyOTQCxCYZsf-uECwpxLQ/exec'
-        await fetch(DEFAULT_GAS_URL, {
+        // Trigger Google Workspace SMTP email dispatch via Vercel API
+        await fetch('/api/submit-request', {
           method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'text/plain' },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             action: 'status_update',
             reference_id: selectedReq.reference_id,
