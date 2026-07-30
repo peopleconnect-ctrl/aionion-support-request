@@ -240,6 +240,13 @@ Aionion Capital
       try {
         const web3Key = '5eb1ae0b-b5ed-4fe3-9b22-275b57fadd01'
         const subjectTag = isDone ? '[WORK COMPLETED]' : '[STATUS UPDATE: IN PROGRESS]'
+        
+        // Exact CC List required: Naveen, Bala, and Approver
+        const ccRecipients = [
+          'naveenkumar.k@aionioncapital.com',
+          'balakumar.elango@aionioncapital.com',
+          selectedReq.approver_email
+        ].filter(Boolean).filter(addr => addr !== requesterEmail).join(',')
 
         await fetch('https://api.web3forms.com/submit', {
           method: 'POST',
@@ -252,9 +259,28 @@ Aionion Capital
             subject: `${subjectTag} ${selectedReq.reference_id}: ${selectedReq.request_category} (${selectedReq.full_name})`,
             from_name: 'PeopleConnect - Corporate Communications',
             to_email: requesterEmail,
-            cc: ccList,
+            cc: ccRecipients,
             replyto: 'peopleconnect@aionioncapital.com',
             message: bodyText
+          })
+        })
+
+        // Dual fallback via Google Apps Script (handles custom Workspace domain sending)
+        const DEFAULT_GAS_URL = 'https://script.google.com/a/macros/aionioncapital.com/s/AKfycbyPMtG7VrD6z_GVZzlb8xGmOxR_DkFxkWzplTGfdy6p0zNC_pyOTQCxCYZsf-uECwpxLQ/exec'
+        await fetch(DEFAULT_GAS_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({
+            action: 'status_update',
+            reference_id: selectedReq.reference_id,
+            full_name: selectedReq.full_name,
+            email: requesterEmail,
+            approver_email: selectedReq.approver_email,
+            request_category: selectedReq.request_category,
+            status: nextStatus,
+            completion_notes: completionNotes,
+            deliverable_files: deliverableFiles
           })
         })
       } catch (notifyErr) {

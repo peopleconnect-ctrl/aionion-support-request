@@ -48,6 +48,17 @@ function doPost(e) {
 
     var data = JSON.parse(contents);
 
+    if (data.action === "status_update") {
+      try {
+        sendStatusUpdateEmail(data);
+      } catch (statusErr) {
+        console.error("Status email error:", statusErr);
+      }
+      return ContentService
+        .createTextOutput(JSON.stringify({ result: "success", status: data.status }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
     // 1. Send Team Notification Email (Runs First)
     try {
       sendTeamEmail(data);
@@ -237,5 +248,66 @@ function sendRequesterEmail(data) {
     });
   } catch (err) {
     console.error("Requester email sending error:", err);
+  }
+}
+
+/**
+ * 3. Send Status Update Email (In Progress / Completed) directly TO Requester with CC to Team & Approver
+ */
+function sendStatusUpdateEmail(data) {
+  if (!data.email) return;
+
+  var isDone = data.status === "Completed";
+  var subjectTag = isDone ? "[WORK COMPLETED]" : "[STATUS UPDATE: IN PROGRESS]";
+  var subject = subjectTag + " " + data.reference_id + ": " + data.request_category + " (" + (data.full_name || "Requester") + ")";
+  
+  var ccList = "naveenkumar.k@aionioncapital.com,balakumar.elango@aionioncapital.com";
+  if (data.approver_email) {
+    ccList += "," + data.approver_email;
+  }
+
+  var deliverableText = "";
+  if (data.deliverable_files && data.deliverable_files.length > 0) {
+    deliverableText = "<div style='margin-top: 15px; padding: 12px; background: #f0fdf4; border-left: 4px solid #16a34a; border-radius: 4px;'><h4 style='margin:0 0 6px 0; color:#166534;'>Completed Deliverables / Files:</h4><ul style='margin:0; padding-left:20px;'>";
+    for (var i = 0; i < data.deliverable_files.length; i++) {
+      var f = data.deliverable_files[i];
+      deliverableText += "<li><a href='" + f.url + "' target='_blank' style='color:#15803d; font-weight:bold;'>" + (f.name || ("Deliverable #" + (i+1))) + "</a></li>";
+    }
+    deliverableText += "</ul></div>";
+  }
+
+  var htmlBody = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+      <div style="background: ${isDone ? '#16a34a' : '#0038FF'}; padding: 20px; text-align: center; color: #ffffff;">
+        <h2 style="margin: 0; font-size: 20px;">${isDone ? 'WORK COMPLETED & DELIVERED' : 'STATUS UPDATE: IN PROGRESS'}</h2>
+        <p style="margin: 4px 0 0 0; font-size: 14px; opacity: 0.9;">Ref ID: ${data.reference_id}</p>
+      </div>
+      
+      <div style="padding: 20px; color: #334155; line-height: 1.5;">
+        <p>Dear <strong>${data.full_name || 'Requester'}</strong>,</p>
+        <p>Your support request for <strong>${data.request_category}</strong> has been updated to status: <strong style="color: ${isDone ? '#16a34a' : '#0038FF'};">${data.status}</strong>.</p>
+        
+        <div style="background: #f8fafc; padding: 12px; border-left: 4px solid #0038FF; border-radius: 4px; margin: 15px 0;">
+          <h4 style="margin: 0 0 6px 0; color: #1e3a8a;">Notes from Corporate Communications Team:</h4>
+          <p style="margin: 0; font-size: 14px; color: #334155;">${data.completion_notes || (isDone ? 'Your request has been successfully completed.' : 'Your request is currently being processed.')}</p>
+        </div>
+
+        ${deliverableText}
+
+        <br/>
+        <p style="margin-bottom: 0;">Warm regards,<br/><strong>Corporate Communications Team</strong><br/>Aionion Capital</p>
+      </div>
+    </div>
+  `;
+
+  try {
+    MailApp.sendEmail({
+      to: data.email,
+      cc: ccList,
+      subject: subject,
+      htmlBody: htmlBody
+    });
+  } catch (err) {
+    console.error("Status update email sending error:", err);
   }
 }
