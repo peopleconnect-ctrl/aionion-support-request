@@ -46,10 +46,12 @@ export default async function handler(req, res) {
       try {
         const gasResponse = await fetch(gasUrl, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify(data),
+          redirect: 'follow'
         })
         gasResult = await gasResponse.text()
+        console.log('GAS Forward Result:', gasResult)
       } catch (err) {
         console.warn('Google Apps Script forward error:', err)
       }
