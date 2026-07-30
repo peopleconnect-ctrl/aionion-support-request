@@ -237,7 +237,18 @@ function App() {
         }
       }
 
-      // Forward to Google Apps Script Web App (updates Google Sheet & sends emails)
+      // 1. Send payload to Vercel Serverless API endpoint (/api/submit-request)
+      try {
+        await fetch('/api/submit-request', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newRecord)
+        })
+      } catch (apiErr) {
+        console.warn('Serverless API notice:', apiErr)
+      }
+
+      // 2. Direct browser fallback to Google Apps Script if URL defined
       const gasUrl = import.meta.env.VITE_GOOGLE_APPS_SCRIPT_URL
       if (gasUrl) {
         try {
@@ -248,7 +259,7 @@ function App() {
             body: JSON.stringify(newRecord)
           })
         } catch (gasErr) {
-          console.warn('Google Apps Script submission notice:', gasErr)
+          console.warn('Direct Google Apps Script notice:', gasErr)
         }
       }
     } catch (err) {
