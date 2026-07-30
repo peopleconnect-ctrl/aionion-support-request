@@ -1049,12 +1049,15 @@
   padding: 8px 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
   border: 1px solid #F1F5F9;
-  overflow-x: hidden;
+  overflow-x: auto;
+  max-width: 100%;
   width: 100%;
+  -webkit-overflow-scrolling: touch;
 }
 
 .admin-table {
   width: 100%;
+  min-width: 900px;
   border-collapse: collapse;
   text-align: left;
   font-family: var(--font-sans);
@@ -1079,6 +1082,19 @@
   font-size: 13px;
   color: #334155;
   vertical-align: middle;
+}
+
+.admin-table th:last-child,
+.admin-table td:last-child {
+  position: sticky;
+  right: 0;
+  background: #FFFFFF;
+  z-index: 2;
+  box-shadow: -4px 0 10px rgba(11, 25, 54, 0.06);
+}
+
+.admin-table th:last-child {
+  background: #F8FAFC;
 }
 
 .ref-badge {
