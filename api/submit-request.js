@@ -90,21 +90,63 @@ export default async function handler(req, res) {
         data.approver_email
       ].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i && v !== requesterEmail)
 
+      const mailAttachments = []
       let deliverableHtml = ''
+
       if (data.deliverable_files && data.deliverable_files.length > 0) {
         deliverableHtml = `
           <div style="margin-top: 18px; padding: 16px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px;">
-            <h4 style="margin: 0 0 12px 0; color: #166534; font-size: 14px; font-weight: bold;">📥 Download Completed Deliverables / Files:</h4>
-            ${data.deliverable_files.map((f, i) => `
-              <div style="padding: 10px 14px; background: #ffffff; border: 1px solid #dcfce7; border-radius: 6px; margin-bottom: 8px; font-size: 13px;">
-                <div style="font-weight: bold; color: #14532d; margin-bottom: 6px;">📄 ${f.name || `Deliverable #${i + 1}`}</div>
-                <a href="${f.url}" download="${f.name || 'deliverable'}" target="_blank" style="background: #16a34a; color: #ffffff; padding: 7px 16px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 12px; display: inline-block;">
-                  📥 Click to Download File
-                </a>
-              </div>
-            `).join('')}
-          </div>
+            <h4 style="margin: 0 0 12px 0; color: #166534; font-size: 14px; font-weight: bold;">📥 Completed Deliverables / Attached Files:</h4>
         `
+
+        data.deliverable_files.forEach((f, i) => {
+          const fileName = f.name || `Deliverable #${i + 1}`
+          const fileUrl = f.url || (typeof f === 'string' ? f : null)
+          const cidName = `deliverable_file_${i}`
+
+          if (fileUrl && fileUrl !== '#') {
+            if (fileUrl.startsWith('data:')) {
+              const matches = fileUrl.match(/^data:(.+?);base64,(.+)$/)
+              if (matches) {
+                const mimeType = matches[1] || 'application/octet-stream'
+                const base64Data = matches[2]
+
+                mailAttachments.push({
+                  filename: fileName,
+                  content: Buffer.from(base64Data, 'base64'),
+                  contentType: mimeType,
+                  cid: cidName
+                })
+
+                deliverableHtml += `
+                  <div style="padding: 12px; background: #ffffff; border: 1px solid #dcfce7; border-radius: 6px; margin-bottom: 10px;">
+                    <div style="font-weight: bold; color: #14532d; margin-bottom: 6px; font-size: 13px;">📄 ${fileName}</div>
+                    ${mimeType.startsWith('image/') ? `<div style="margin: 8px 0;"><img src="cid:${cidName}" alt="${fileName}" style="max-width: 100%; max-height: 280px; border-radius: 6px; border: 1px solid #bbf7d0;" /></div>` : ''}
+                    <div style="font-size: 12px; color: #16a34a; font-weight: bold;">
+                      📎 Attached to this email (Check email attachment bar to download)
+                    </div>
+                  </div>
+                `
+              }
+            } else if (fileUrl.startsWith('http')) {
+              mailAttachments.push({
+                filename: fileName,
+                path: fileUrl
+              })
+
+              deliverableHtml += `
+                <div style="padding: 12px; background: #ffffff; border: 1px solid #dcfce7; border-radius: 6px; margin-bottom: 10px;">
+                  <div style="font-weight: bold; color: #14532d; margin-bottom: 6px; font-size: 13px;">📄 ${fileName}</div>
+                  <a href="${fileUrl}" download="${fileName}" target="_blank" style="background: #16a34a; color: #ffffff; padding: 7px 16px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 12px; display: inline-block;">
+                    📥 Click to Download File
+                  </a>
+                </div>
+              `
+            }
+          }
+        })
+
+        deliverableHtml += `</div>`
       }
 
       const htmlBody = `
@@ -134,9 +176,6 @@ export default async function handler(req, res) {
           </div>
         </div>
       `
-
-      // Convert deliverable files to real email attachments
-      const mailAttachments = prepareNodemailerAttachments(data.deliverable_files)
 
       try {
         await transporter.sendMail({
