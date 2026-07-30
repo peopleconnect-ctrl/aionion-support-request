@@ -251,30 +251,12 @@ function App() {
         }
       }
 
-      // Sanitize payload for API call to keep payload under Vercel 4.5MB limit
-      const sanitizeFileUrlsForEmail = (fileArray) => {
-        if (!fileArray || !Array.isArray(fileArray)) return []
-        return fileArray.map((f) => {
-          const fileUrl = f.url || (typeof f === 'string' ? f : '#')
-          if (fileUrl && fileUrl.startsWith('data:') && fileUrl.length > 1000000) {
-            return { name: f.name || 'Attachment', url: '#' }
-          }
-          return f
-        })
-      }
-
-      const emailPayload = {
-        ...newRecord,
-        reference_file_urls: sanitizeFileUrlsForEmail(newRecord.reference_file_urls),
-        approval_file_urls: sanitizeFileUrlsForEmail(newRecord.approval_file_urls)
-      }
-
       // 1. Send payload to Vercel Serverless API endpoint (/api/submit-request)
       try {
         await fetch('/api/submit-request', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(emailPayload)
+          body: JSON.stringify(newRecord)
         })
       } catch (apiErr) {
         console.warn('Serverless API notice:', apiErr)

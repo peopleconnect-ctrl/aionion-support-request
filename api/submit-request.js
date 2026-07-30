@@ -189,29 +189,71 @@ export default async function handler(req, res) {
       }
     }
 
-    // 3. Render Downloadable Attached Files for New Request
+    // 3. Render Downloadable Attached Files & Attachments for New Request
     const allRequesterFiles = [
       ...(data.reference_file_urls || []),
       ...(data.approval_file_urls || [])
     ]
 
+    const mailAttachments = []
     let requesterFilesHtml = ''
+
     if (allRequesterFiles.length > 0) {
       requesterFilesHtml = `
         <h3 style="color: #0038FF; font-size: 14px; border-bottom: 2px solid #eff6ff; padding-bottom: 8px; margin-top: 24px; text-transform: uppercase; letter-spacing: 0.5px;">
           📎 Requester Attached Files / Artwork References
         </h3>
         <div style="margin-bottom: 20px;">
-          ${allRequesterFiles.map((f, i) => `
-            <div style="padding: 10px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 8px; font-size: 13px;">
-              <div style="font-weight: bold; color: #334155; margin-bottom: 6px;">📄 ${f.name || `Attachment #${i + 1}`}</div>
-              <a href="${f.url}" download="${f.name || 'attachment'}" target="_blank" style="background: #0038FF; color: #ffffff; padding: 6px 14px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 12px; display: inline-block;">
-                📥 Download Attachment
-              </a>
-            </div>
-          `).join('')}
-        </div>
       `
+
+      allRequesterFiles.forEach((f, i) => {
+        const fileName = f.name || `Attachment #${i + 1}`
+        const fileUrl = f.url || (typeof f === 'string' ? f : null)
+        const cidName = `requester_file_${i}`
+
+        if (fileUrl && fileUrl !== '#') {
+          if (fileUrl.startsWith('data:')) {
+            const matches = fileUrl.match(/^data:(.+?);base64,(.+)$/)
+            if (matches) {
+              const mimeType = matches[1] || 'application/octet-stream'
+              const base64Data = matches[2]
+
+              mailAttachments.push({
+                filename: fileName,
+                content: Buffer.from(base64Data, 'base64'),
+                contentType: mimeType,
+                cid: cidName
+              })
+
+              requesterFilesHtml += `
+                <div style="padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 10px;">
+                  <div style="font-weight: bold; color: #1e293b; margin-bottom: 6px; font-size: 13px;">📄 ${fileName}</div>
+                  ${mimeType.startsWith('image/') ? `<div style="margin: 8px 0;"><img src="cid:${cidName}" alt="${fileName}" style="max-width: 100%; max-height: 280px; border-radius: 6px; border: 1px solid #cbd5e1;" /></div>` : ''}
+                  <div style="font-size: 12px; color: #16a34a; font-weight: bold;">
+                    📎 Attached to this email (Check email attachment bar to download)
+                  </div>
+                </div>
+              `
+            }
+          } else if (fileUrl.startsWith('http')) {
+            mailAttachments.push({
+              filename: fileName,
+              path: fileUrl
+            })
+
+            requesterFilesHtml += `
+              <div style="padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 10px;">
+                <div style="font-weight: bold; color: #1e293b; margin-bottom: 6px; font-size: 13px;">📄 ${fileName}</div>
+                <a href="${fileUrl}" download="${fileName}" target="_blank" style="background: #0038FF; color: #ffffff; padding: 7px 16px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 12px; display: inline-block;">
+                  📥 Click to Download File
+                </a>
+              </div>
+            `
+          }
+        }
+      })
+
+      requesterFilesHtml += `</div>`
     }
 
     // 4. Send Professional Acknowledgement Email via Google SMTP
@@ -267,9 +309,6 @@ export default async function handler(req, res) {
         </div>
       </div>
     `
-
-    // Convert requester files to real email attachments
-    const mailAttachments = prepareNodemailerAttachments(allRequesterFiles)
 
     try {
       await transporter.sendMail({
