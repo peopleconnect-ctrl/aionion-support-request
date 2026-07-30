@@ -39,66 +39,80 @@ function testEmailAndSheet() {
 
 function doPost(e) {
   try {
-    var data = JSON.parse(e.postData.contents);
-    
-    // 1. Get or Create Sheet
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var sheet = ss.getSheetByName("Support Requests");
-    if (!sheet) {
-      sheet = ss.insertSheet("Support Requests");
-      // Add Headers row
-      sheet.appendRow([
-        "Reference ID",
-        "Submitted Date",
-        "Full Name",
-        "Employee Code",
-        "Department",
-        "Official Email",
-        "Contact Number",
-        "Branch Location",
-        "Request Category",
-        "Target Audience",
-        "Purpose of Request",
-        "Required By",
-        "Priority Level",
-        "Approver Name",
-        "Approver Email",
-        "Approver Department",
-        "Status"
-      ]);
-      // Format header row
-      sheet.getRange(1, 1, 1, 17).setFontWeight("bold").setBackground("#0038FF").setFontColor("#FFFFFF");
+    var contents = e && e.postData && e.postData.contents ? e.postData.contents : null;
+    if (!contents) {
+      return ContentService
+        .createTextOutput(JSON.stringify({ result: "error", message: "No post contents received" }))
+        .setMimeType(ContentService.MimeType.JSON);
     }
 
-    // 2. Format Timestamp
-    var timestamp = data.created_at ? new Date(data.created_at).toLocaleString('en-GB') : new Date().toLocaleString('en-GB');
+    var data = JSON.parse(contents);
 
-    // 3. Append Row to Google Sheet
-    sheet.appendRow([
-      data.reference_id || "",
-      timestamp,
-      data.full_name || "",
-      data.employee_code || "N/A",
-      data.department || "",
-      data.email || "",
-      data.contact_number || "",
-      data.branch_location || "",
-      data.request_category || "",
-      data.target_audience || "N/A",
-      data.purpose_of_request || "",
-      data.required_by || "",
-      data.priority_level || "Normal",
-      data.approver_name || "",
-      data.approver_email || "",
-      data.approver_department || "",
-      data.status || "Pending"
-    ]);
+    // 1. Send Team Notification Email (Runs First)
+    try {
+      sendTeamEmail(data);
+    } catch (emailErr) {
+      console.error("Team email error:", emailErr);
+    }
 
-    // 4. Send Team Notification Email
-    sendTeamEmail(data);
+    // 2. Send Requester Confirmation Email (Runs First)
+    try {
+      sendRequesterEmail(data);
+    } catch (reqEmailErr) {
+      console.error("Requester email error:", reqEmailErr);
+    }
 
-    // 5. Send Requester Confirmation Email
-    sendRequesterEmail(data);
+    // 3. Get Spreadsheet (Active or Open by ID)
+    var ss = null;
+    try {
+      ss = SpreadsheetApp.getActiveSpreadsheet();
+    } catch (err) {
+      console.warn("getActiveSpreadsheet notice:", err);
+    }
+
+    // If container-bound getActiveSpreadsheet failed, attempt to get default or open active
+    if (!ss) {
+      try {
+        var files = DriveApp.getFilesByName("Aionion Support Requests");
+        if (files.hasNext()) {
+          var file = files.next();
+          ss = SpreadsheetApp.open(file);
+        }
+      } catch (driveErr) {
+        console.warn("DriveApp open notice:", driveErr);
+      }
+    }
+
+    // 4. Log to Sheet if Spreadsheet found
+    if (ss) {
+      try {
+        var sheet = ss.getSheetByName("Support Requests") || ss.getSheets()[0];
+        if (sheet) {
+          var timestamp = data.created_at ? new Date(data.created_at).toLocaleString('en-GB') : new Date().toLocaleString('en-GB');
+          sheet.appendRow([
+            data.reference_id || "",
+            timestamp,
+            data.full_name || "",
+            data.employee_code || "N/A",
+            data.department || "",
+            data.email || "",
+            data.contact_number || "",
+            data.branch_location || "",
+            data.request_category || "",
+            data.target_audience || "N/A",
+            data.purpose_of_request || "",
+            data.required_by || "",
+            data.priority_level || "Normal",
+            data.approver_name || "",
+            data.approver_email || "",
+            data.approver_department || "",
+            data.status || "Pending"
+          ]);
+        }
+      } catch (sheetErr) {
+        console.error("Sheet append error:", sheetErr);
+      }
+    }
 
     return ContentService
       .createTextOutput(JSON.stringify({ result: "success", reference_id: data.reference_id }))
