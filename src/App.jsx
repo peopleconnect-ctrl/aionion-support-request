@@ -213,7 +213,7 @@ function App() {
         approver_department: formData.approverDepartment,
         reference_file_urls: refFileUrls,
         approval_file_urls: approvalFileUrls,
-        status: 'Pending',
+        status: 'In Progress',
         created_at: new Date().toISOString()
       }
 
