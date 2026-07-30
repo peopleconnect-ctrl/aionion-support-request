@@ -238,34 +238,7 @@ Aionion Capital
 `
 
       try {
-        const web3Key = '5eb1ae0b-b5ed-4fe3-9b22-275b57fadd01'
-        const subjectTag = isDone ? '[WORK COMPLETED]' : '[STATUS UPDATE: IN PROGRESS]'
-        
-        // Exact CC List required: Naveen, Bala, and Approver
-        const ccRecipients = [
-          'naveenkumar.k@aionioncapital.com',
-          'balakumar.elango@aionioncapital.com',
-          selectedReq.approver_email
-        ].filter(Boolean).filter(addr => addr !== requesterEmail).join(',')
-
-        await fetch('https://api.web3forms.com/submit', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify({
-            access_key: web3Key,
-            subject: `${subjectTag} ${selectedReq.reference_id}: ${selectedReq.request_category} (${selectedReq.full_name})`,
-            from_name: 'PeopleConnect - Corporate Communications',
-            to_email: requesterEmail,
-            cc: ccRecipients,
-            replyto: 'peopleconnect@aionioncapital.com',
-            message: bodyText
-          })
-        })
-
-        // Dual fallback via Google Apps Script (handles custom Workspace domain sending)
+        // Native Google Apps Script Dispatch (Handles real TO and CC headers via Google Workspace)
         const DEFAULT_GAS_URL = 'https://script.google.com/a/macros/aionioncapital.com/s/AKfycbyPMtG7VrD6z_GVZzlb8xGmOxR_DkFxkWzplTGfdy6p0zNC_pyOTQCxCYZsf-uECwpxLQ/exec'
         await fetch(DEFAULT_GAS_URL, {
           method: 'POST',

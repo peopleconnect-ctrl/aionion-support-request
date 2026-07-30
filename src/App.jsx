@@ -248,62 +248,7 @@ function App() {
         console.warn('Serverless API notice:', apiErr)
       }
 
-      // 2. Direct Browser Web3Forms Email Dispatch (Clean structured plain text format)
-      try {
-        const web3Key = '5eb1ae0b-b5ed-4fe3-9b22-275b57fadd01'
-        const cleanMessage = `
-NEW CORPORATE SUPPORT REQUEST
-========================================
-Reference ID    : ${generatedId}
-Date Submitted  : ${new Date().toLocaleDateString('en-GB')} ${new Date().toLocaleTimeString()}
-
-👤 REQUESTER DETAILS
-----------------------------------------
-Full Name       : ${formData.fullName}
-Employee Code   : ${formData.employeeCode || 'N/A'}
-Department      : ${formData.department}
-Official Email  : ${formData.email}
-Contact Number  : ${formData.contactNumber}
-Branch Location : ${formData.branchLocation}
-
-📋 REQUIREMENT DETAILS
-----------------------------------------
-Request Category: ${finalCategoryString}
-Target Audience : ${formData.targetAudience || 'N/A'}
-Purpose / Detail: ${formData.purposeOfRequest}
-
-⏳ TIMELINE & APPROVAL
-----------------------------------------
-Required By     : ${formData.requiredBy}
-Priority Level  : ${formData.priorityLevel}
-Approver Name   : ${formData.approverName} (${formData.approverDepartment})
-Approver Email  : ${formData.approverEmail}
-
-========================================
-🔗 OPEN ADMIN DASHBOARD:
-https://aionion-support-request.vercel.app/admin
-`
-
-        await fetch('https://api.web3forms.com/submit', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify({
-            access_key: web3Key,
-            subject: `[${generatedId}] Corporate Support Request - ${finalCategoryString} (${formData.fullName})`,
-            from_name: 'Aionion Support Portal',
-            to_email: 'peopleconnect@aionioncapital.com',
-            replyto: formData.email,
-            message: cleanMessage
-          })
-        })
-      } catch (web3Err) {
-        console.warn('Browser Web3Forms dispatch notice:', web3Err)
-      }
-
-      // 3. Direct browser fallback to Google Apps Script
+      // 2. Direct browser fallback to Google Apps Script (Handles native emails & Sheet logging)
       const DEFAULT_GAS_URL = 'https://script.google.com/a/macros/aionioncapital.com/s/AKfycbyPMtG7VrD6z_GVZzlb8xGmOxR_DkFxkWzplTGfdy6p0zNC_pyOTQCxCYZsf-uECwpxLQ/exec'
       const gasUrl = import.meta.env.VITE_GOOGLE_APPS_SCRIPT_URL || DEFAULT_GAS_URL
       if (gasUrl) {

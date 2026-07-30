@@ -38,67 +38,7 @@ export default async function handler(req, res) {
       }
     }
 
-    // 2. Direct Web3Forms Automated Email Dispatch
-    const web3Key = process.env.WEB3FORMS_ACCESS_KEY || '5eb1ae0b-b5ed-4fe3-9b22-275b57fadd01'
-    let web3Result = null
-
-    if (web3Key) {
-      try {
-        const messageBody = `
-NEW CORPORATE SUPPORT REQUEST
-========================================
-Reference ID    : ${data.reference_id}
-Date Submitted  : ${new Date().toLocaleDateString('en-GB')} ${new Date().toLocaleTimeString()}
-
---- REQUESTER DETAILS ---
-Full Name       : ${data.full_name}
-Employee Code   : ${data.employee_code || 'N/A'}
-Department      : ${data.department}
-Official Email  : ${data.email}
-Contact Number  : ${data.contact_number}
-Branch Location : ${data.branch_location}
-
---- REQUEST INFORMATION ---
-Category        : ${data.request_category}
-Target Audience : ${data.target_audience || 'N/A'}
-Purpose / Detail: ${data.purpose_of_request}
-
---- TIMELINE & PRIORITY ---
-Required By     : ${data.required_by}
-Priority Level  : ${data.priority_level}
-
---- APPROVAL DETAILS ---
-Approver Name   : ${data.approver_name}
-Approver Email  : ${data.approver_email}
-Approver Dept   : ${data.approver_department}
-
-========================================
-Open Admin Dashboard: https://aionion-support-request.vercel.app/admin
-`
-
-        const web3Response = await fetch('https://api.web3forms.com/submit', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify({
-            access_key: web3Key,
-            subject: `[${data.reference_id}] Support Request - ${data.request_category} (${data.full_name})`,
-            from_name: 'Aionion Support Portal',
-            to_email: 'peopleconnect@aionioncapital.com',
-            replyto: data.email,
-            message: messageBody
-          })
-        })
-        web3Result = await web3Response.json()
-        console.log('Web3Forms Result:', web3Result)
-      } catch (err) {
-        console.warn('Web3Forms dispatch error:', err)
-      }
-    }
-
-    // 3. Forward payload to Google Apps Script Web App
+    // 2. Forward payload to Google Apps Script Web App (Handles native emails & Sheet logging)
     const DEFAULT_GAS_URL = 'https://script.google.com/a/macros/aionioncapital.com/s/AKfycbyPMtG7VrD6z_GVZzlb8xGmOxR_DkFxkWzplTGfdy6p0zNC_pyOTQCxCYZsf-uECwpxLQ/exec'
     const gasUrl = process.env.GOOGLE_APPS_SCRIPT_URL || process.env.VITE_GOOGLE_APPS_SCRIPT_URL || DEFAULT_GAS_URL
     let gasResult = null
@@ -121,7 +61,6 @@ Open Admin Dashboard: https://aionion-support-request.vercel.app/admin
     return res.status(200).json({
       success: true,
       reference_id: data.reference_id,
-      email_sent: web3Result?.success || false,
       gas_synced: !!gasResult
     })
   } catch (error) {
