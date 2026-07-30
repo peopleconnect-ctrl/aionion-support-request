@@ -130,14 +130,25 @@ export default async function handler(req, res) {
       // Convert deliverable files to real email attachments
       const mailAttachments = prepareNodemailerAttachments(data.deliverable_files)
 
-      await transporter.sendMail({
-        from: '"PeopleConnect - Corporate Communications" <peopleconnect@aionioncapital.com>',
-        to: requesterEmail,
-        cc: ccList,
-        subject: `${subjectTag} ${data.reference_id}: ${data.request_category} (${data.full_name})`,
-        html: htmlBody,
-        attachments: mailAttachments
-      })
+      try {
+        await transporter.sendMail({
+          from: '"PeopleConnect - Corporate Communications" <peopleconnect@aionioncapital.com>',
+          to: requesterEmail,
+          cc: ccList,
+          subject: `${subjectTag} ${data.reference_id}: ${data.request_category} (${data.full_name})`,
+          html: htmlBody,
+          attachments: mailAttachments
+        })
+      } catch (sendErr) {
+        console.warn('Mail with attachments notice, retrying clean email:', sendErr)
+        await transporter.sendMail({
+          from: '"PeopleConnect - Corporate Communications" <peopleconnect@aionioncapital.com>',
+          to: requesterEmail,
+          cc: ccList,
+          subject: `${subjectTag} ${data.reference_id}: ${data.request_category} (${data.full_name})`,
+          html: htmlBody
+        })
+      }
 
       return res.status(200).json({ success: true, action: 'status_update' })
     }
@@ -260,14 +271,25 @@ export default async function handler(req, res) {
     // Convert requester files to real email attachments
     const mailAttachments = prepareNodemailerAttachments(allRequesterFiles)
 
-    await transporter.sendMail({
-      from: '"PeopleConnect - Corporate Communications" <peopleconnect@aionioncapital.com>',
-      to: requesterEmail,
-      cc: ccList,
-      subject: `[IN PROGRESS] ${data.reference_id}: Support Request Received - ${data.request_category} (${data.full_name})`,
-      html: ackHtml,
-      attachments: mailAttachments
-    })
+    try {
+      await transporter.sendMail({
+        from: '"PeopleConnect - Corporate Communications" <peopleconnect@aionioncapital.com>',
+        to: requesterEmail,
+        cc: ccList,
+        subject: `[IN PROGRESS] ${data.reference_id}: Support Request Received - ${data.request_category} (${data.full_name})`,
+        html: ackHtml,
+        attachments: mailAttachments
+      })
+    } catch (sendErr) {
+      console.warn('Submission mail attachment notice, retrying clean email:', sendErr)
+      await transporter.sendMail({
+        from: '"PeopleConnect - Corporate Communications" <peopleconnect@aionioncapital.com>',
+        to: requesterEmail,
+        cc: ccList,
+        subject: `[IN PROGRESS] ${data.reference_id}: Support Request Received - ${data.request_category} (${data.full_name})`,
+        html: ackHtml
+      })
+    }
 
     return res.status(200).json({
       success: true,
