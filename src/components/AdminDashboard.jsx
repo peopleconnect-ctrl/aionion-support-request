@@ -195,21 +195,25 @@ export default function AdminDashboard({ onSwitchToForm, onLogout }) {
     if (isCompleting) {
       const recipient = selectedReq.email
       const ccRecipients = `${selectedReq.approver_email || ''},peopleconnect@aionioncapital.com`
-      const subject = encodeURIComponent(
-        `[WORK COMPLETED] ${selectedReq.reference_id}: ${selectedReq.request_category}`
-      )
 
       let fileLinksText = deliverableFiles.length > 0
         ? deliverableFiles.map((f, i) => `${i + 1}. ${f.name}: ${f.url}`).join('\n')
         : 'Deliverable files delivered directly / attached.'
 
-      const bodyText = `WORK COMPLETED & DELIVERED
+      const bodyText = `
+WORK COMPLETED & DELIVERED
 ========================================
 Reference ID    : ${selectedReq.reference_id}
 Requester Name  : ${selectedReq.full_name}
 Department      : ${selectedReq.department}
 Request Category: ${selectedReq.request_category}
 Date Completed  : ${new Date().toLocaleDateString('en-GB')}
+
+👤 REQUESTER DETAILS
+----------------------------------------
+Official Email  : ${selectedReq.email}
+Contact Number  : ${selectedReq.contact_number || 'N/A'}
+Branch Location : ${selectedReq.branch_location || 'N/A'}
 
 --- DELIVERY NOTES & INSTRUCTIONS ---
 ${completionNotes || 'Your support request has been successfully completed by Corporate Communications team.'}
@@ -222,8 +226,30 @@ Corporate Communications & Support Team
 Aionion Capital
 `
 
-      const mailtoUrl = `mailto:${recipient}?cc=${ccRecipients}&subject=${subject}&body=${encodeURIComponent(bodyText)}`
-      window.location.href = mailtoUrl
+      try {
+        const web3Key = '5eb1ae0b-b5ed-4fe3-9b22-275b57fadd01'
+        const recipients = recipient && recipient !== 'peopleconnect@aionioncapital.com'
+          ? `peopleconnect@aionioncapital.com,${recipient}`
+          : 'peopleconnect@aionioncapital.com'
+
+        await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            access_key: web3Key,
+            subject: `[WORK COMPLETED] ${selectedReq.reference_id}: ${selectedReq.request_category} (${selectedReq.full_name})`,
+            from_name: 'Aionion Support Portal',
+            to_email: recipients,
+            replyto: 'peopleconnect@aionioncapital.com',
+            message: bodyText
+          })
+        })
+      } catch (notifyErr) {
+        console.warn('Completion notification dispatch error:', notifyErr)
+      }
     }
 
     setIsSaving(false)
