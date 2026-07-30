@@ -123,10 +123,43 @@ export default function AdminDashboard({ onSwitchToForm, onLogout }) {
     setIsUploading(true)
     const newUrls = [...deliverableFiles]
 
-    const fileToDataUrl = (file) =>
+    const compressImageIfNeeded = (file) =>
       new Promise((resolve) => {
+        if (!file.type.startsWith('image/')) {
+          const reader = new FileReader()
+          reader.onload = (e) => resolve(e.target.result)
+          reader.onerror = () => resolve('#')
+          reader.readAsDataURL(file)
+          return
+        }
+
         const reader = new FileReader()
-        reader.onload = (e) => resolve(e.target.result)
+        reader.onload = (e) => {
+          const img = new Image()
+          img.onload = () => {
+            const canvas = document.createElement('canvas')
+            let width = img.width
+            let height = img.height
+            const maxDim = 1200
+            if (width > maxDim || height > maxDim) {
+              if (width > height) {
+                height = Math.round((height * maxDim) / width)
+                width = maxDim
+              } else {
+                width = Math.round((width * maxDim) / height)
+                height = maxDim
+              }
+            }
+            canvas.width = width
+            canvas.height = height
+            const ctx = canvas.getContext('2d')
+            ctx.drawImage(img, 0, 0, width, height)
+            const compressed = canvas.toDataURL('image/jpeg', 0.8)
+            resolve(compressed)
+          }
+          img.onerror = () => resolve(e.target.result)
+          img.src = e.target.result
+        }
         reader.onerror = () => resolve('#')
         reader.readAsDataURL(file)
       })
@@ -154,7 +187,7 @@ export default function AdminDashboard({ onSwitchToForm, onLogout }) {
         }
       }
       if (!publicUrl || publicUrl === '#') {
-        publicUrl = await fileToDataUrl(file)
+        publicUrl = await compressImageIfNeeded(file)
       }
       newUrls.push({ name: file.name, url: publicUrl })
     }
