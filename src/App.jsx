@@ -236,6 +236,21 @@ function App() {
           console.warn('Supabase insert notice:', e)
         }
       }
+
+      // Forward to Google Apps Script Web App (updates Google Sheet & sends emails)
+      const gasUrl = import.meta.env.VITE_GOOGLE_APPS_SCRIPT_URL
+      if (gasUrl) {
+        try {
+          await fetch(gasUrl, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify(newRecord)
+          })
+        } catch (gasErr) {
+          console.warn('Google Apps Script submission notice:', gasErr)
+        }
+      }
     } catch (err) {
       console.warn('Submission notice:', err)
     } finally {
@@ -306,8 +321,8 @@ ${approvalFilesText}
 Automated notification from Corporate Support Portal.
 `
 
-      const mailtoUrl = `mailto:${recipient}?cc=${ccRecipients}&subject=${subject}&body=${encodeURIComponent(bodyText)}`
-      window.location.href = mailtoUrl
+      // Mailto URL generated for optional manual email link if needed
+      // (Automatic window.location.href mailto disabled to prevent Outlook popup)
     }
   }
 
