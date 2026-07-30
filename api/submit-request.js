@@ -38,8 +38,9 @@ export default async function handler(req, res) {
       }
     }
 
-    // 2. Forward payload to Google Apps Script Web App (if configured)
-    const gasUrl = process.env.GOOGLE_APPS_SCRIPT_URL || process.env.VITE_GOOGLE_APPS_SCRIPT_URL
+    // 2. Forward payload to Google Apps Script Web App
+    const DEFAULT_GAS_URL = 'https://script.google.com/a/macros/aionioncapital.com/s/AKfycbyPMtG7VrD6z_GVZzlb8xGmOxR_DkFxkWzplTGfdy6p0zNC_pyOTQCxCYZsf-uECwpxLQ/exec'
+    const gasUrl = process.env.GOOGLE_APPS_SCRIPT_URL || process.env.VITE_GOOGLE_APPS_SCRIPT_URL || DEFAULT_GAS_URL
     let gasResult = null
 
     if (gasUrl) {

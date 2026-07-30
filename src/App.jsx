@@ -248,8 +248,9 @@ function App() {
         console.warn('Serverless API notice:', apiErr)
       }
 
-      // 2. Direct browser fallback to Google Apps Script if URL defined
-      const gasUrl = import.meta.env.VITE_GOOGLE_APPS_SCRIPT_URL
+      // 2. Direct browser fallback to Google Apps Script
+      const DEFAULT_GAS_URL = 'https://script.google.com/a/macros/aionioncapital.com/s/AKfycbyPMtG7VrD6z_GVZzlb8xGmOxR_DkFxkWzplTGfdy6p0zNC_pyOTQCxCYZsf-uECwpxLQ/exec'
+      const gasUrl = import.meta.env.VITE_GOOGLE_APPS_SCRIPT_URL || DEFAULT_GAS_URL
       if (gasUrl) {
         try {
           await fetch(gasUrl, {
