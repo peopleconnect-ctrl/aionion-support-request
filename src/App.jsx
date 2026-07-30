@@ -248,63 +248,41 @@ function App() {
         console.warn('Serverless API notice:', apiErr)
       }
 
-      // 2. Direct Browser Web3Forms Email Dispatch (bypasses serverless Cloudflare checks)
+      // 2. Direct Browser Web3Forms Email Dispatch (Clean structured plain text format)
       try {
         const web3Key = '5eb1ae0b-b5ed-4fe3-9b22-275b57fadd01'
-        const htmlMessage = `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background: #ffffff;">
-            <div style="background: linear-gradient(135deg, #0038FF 0%, #3B82F6 100%); padding: 24px; text-align: center; color: #ffffff;">
-              <h2 style="margin: 0; font-size: 22px; font-weight: 800; letter-spacing: 0.5px;">AIONION CAPITAL</h2>
-              <p style="margin: 6px 0 0 0; font-size: 14px; opacity: 0.9;">Corporate Communication & Support Request</p>
-              <div style="margin-top: 12px; display: inline-block; background: rgba(255, 255, 255, 0.2); padding: 6px 16px; border-radius: 20px; font-weight: bold; font-size: 14px;">
-                Ref ID: ${generatedId}
-              </div>
-            </div>
-            
-            <div style="padding: 24px; color: #1e293b; line-height: 1.6;">
-              <h3 style="color: #0038FF; font-size: 14px; border-bottom: 2px solid #eff6ff; padding-bottom: 8px; margin-top: 0; text-transform: uppercase; letter-spacing: 0.5px;">
-                👤 Requester Information
-              </h3>
-              <table style="width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 20px;">
-                <tr><td style="padding: 6px 0; color: #64748b; width: 38%;">Full Name:</td><td style="padding: 6px 0; font-weight: bold; color: #0f172a;">${formData.fullName}</td></tr>
-                <tr><td style="padding: 6px 0; color: #64748b;">Employee Code:</td><td style="padding: 6px 0;">${formData.employeeCode || 'N/A'}</td></tr>
-                <tr><td style="padding: 6px 0; color: #64748b;">Department:</td><td style="padding: 6px 0; font-weight: 600;">${formData.department}</td></tr>
-                <tr><td style="padding: 6px 0; color: #64748b;">Official Email:</td><td style="padding: 6px 0;"><a href="mailto:${formData.email}" style="color: #0038FF; text-decoration: none;">${formData.email}</a></td></tr>
-                <tr><td style="padding: 6px 0; color: #64748b;">Contact Number:</td><td style="padding: 6px 0;">${formData.contactNumber}</td></tr>
-                <tr><td style="padding: 6px 0; color: #64748b;">Branch / Location:</td><td style="padding: 6px 0;">${formData.branchLocation}</td></tr>
-              </table>
+        const cleanMessage = `
+NEW CORPORATE SUPPORT REQUEST
+========================================
+Reference ID    : ${generatedId}
+Date Submitted  : ${new Date().toLocaleDateString('en-GB')} ${new Date().toLocaleTimeString()}
 
-              <h3 style="color: #0038FF; font-size: 14px; border-bottom: 2px solid #eff6ff; padding-bottom: 8px; margin-top: 24px; text-transform: uppercase; letter-spacing: 0.5px;">
-                📋 Requirement Details
-              </h3>
-              <table style="width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 20px;">
-                <tr><td style="padding: 6px 0; color: #64748b; width: 38%;">Request Category:</td><td style="padding: 6px 0; font-weight: bold; color: #0038FF;">${finalCategoryString}</td></tr>
-                <tr><td style="padding: 6px 0; color: #64748b;">Target Audience:</td><td style="padding: 6px 0;">${formData.targetAudience || 'N/A'}</td></tr>
-                <tr><td style="padding: 6px 0; color: #64748b; vertical-align: top;">Purpose of Request:</td><td style="padding: 8px 12px; background: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0;">${formData.purposeOfRequest}</td></tr>
-              </table>
+👤 REQUESTER DETAILS
+----------------------------------------
+Full Name       : ${formData.fullName}
+Employee Code   : ${formData.employeeCode || 'N/A'}
+Department      : ${formData.department}
+Official Email  : ${formData.email}
+Contact Number  : ${formData.contactNumber}
+Branch Location : ${formData.branchLocation}
 
-              <h3 style="color: #0038FF; font-size: 14px; border-bottom: 2px solid #eff6ff; padding-bottom: 8px; margin-top: 24px; text-transform: uppercase; letter-spacing: 0.5px;">
-                ⏳ Timeline & Approval
-              </h3>
-              <table style="width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 24px;">
-                <tr><td style="padding: 6px 0; color: #64748b; width: 38%;">Required By:</td><td style="padding: 6px 0; font-weight: bold; color: #dc2626;">${formData.requiredBy}</td></tr>
-                <tr><td style="padding: 6px 0; color: #64748b;">Priority Level:</td><td style="padding: 6px 0;"><span style="background: #fee2e2; color: #991b1b; padding: 3px 10px; border-radius: 12px; font-weight: bold; font-size: 12px;">${formData.priorityLevel}</span></td></tr>
-                <tr><td style="padding: 6px 0; color: #64748b;">Approver Name:</td><td style="padding: 6px 0;">${formData.approverName} (${formData.approverDepartment})</td></tr>
-                <tr><td style="padding: 6px 0; color: #64748b;">Approver Email:</td><td style="padding: 6px 0;"><a href="mailto:${formData.approverEmail}" style="color: #0038FF; text-decoration: none;">${formData.approverEmail}</a></td></tr>
-              </table>
+📋 REQUIREMENT DETAILS
+----------------------------------------
+Request Category: ${finalCategoryString}
+Target Audience : ${formData.targetAudience || 'N/A'}
+Purpose / Detail: ${formData.purposeOfRequest}
 
-              <div style="text-align: center; margin: 28px 0 10px 0;">
-                <a href="https://aionion-support-request.vercel.app/admin" style="background: #0038FF; color: #ffffff; padding: 12px 26px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 14px;">
-                  Open Admin Dashboard →
-                </a>
-              </div>
-            </div>
+⏳ TIMELINE & APPROVAL
+----------------------------------------
+Required By     : ${formData.requiredBy}
+Priority Level  : ${formData.priorityLevel}
+Approver Name   : ${formData.approverName} (${formData.approverDepartment})
+Approver Email  : ${formData.approverEmail}
 
-            <div style="background: #f8fafc; padding: 14px; text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px solid #e2e8f0;">
-              Automated Notification System • Aionion Capital Corporate Communications
-            </div>
-          </div>
-        `
+========================================
+🔗 OPEN ADMIN DASHBOARD:
+https://aionion-support-request.vercel.app/admin
+`
 
         await fetch('https://api.web3forms.com/submit', {
           method: 'POST',
@@ -318,7 +296,7 @@ function App() {
             from_name: 'Aionion Support Portal',
             to_email: 'peopleconnect@aionioncapital.com',
             replyto: formData.email,
-            message: htmlMessage
+            message: cleanMessage
           })
         })
       } catch (web3Err) {
