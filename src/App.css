@@ -1086,21 +1086,8 @@
 
 .admin-table th:last-child,
 .admin-table td:last-child {
-  position: sticky;
-  right: 0;
-  background: #FFFFFF !important;
-  z-index: 10;
-  box-shadow: -6px 0 14px rgba(11, 25, 54, 0.09);
-  border-left: 1px solid #E2E8F0;
-}
-
-.admin-table th:last-child {
-  background: #F8FAFC !important;
-  z-index: 11;
-}
-
-.admin-table tr:hover td:last-child {
-  background: #F8FAFC !important;
+  text-align: right;
+  padding-right: 16px;
 }
 
 .ref-badge {
@@ -1438,8 +1425,9 @@
 /* Main Content Area */
 .portal-main {
   flex: 1;
+  min-width: 0;
   width: calc(100vw - 260px);
-  padding: 28px 36px;
+  padding: 24px 28px;
   display: flex;
   flex-direction: column;
   gap: 24px;
