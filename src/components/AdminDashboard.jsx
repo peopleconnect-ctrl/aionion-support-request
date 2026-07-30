@@ -1024,20 +1024,28 @@ Aionion Capital
                           <li key={i} style={{ marginBottom: '6px', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#f8fafc', padding: '8px 12px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
                             <span style={{ fontWeight: '600', color: '#1e293b', flex: 1, marginRight: '8px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>📄 {fileName}</span>
                             <div style={{ display: 'flex', gap: '6px' }}>
-                              <button
-                                type="button"
-                                onClick={() => handleViewFile(fileUrl)}
-                                style={{ background: '#f1f5f9', color: '#334155', border: '1px solid #cbd5e1', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
-                              >
-                                👁️ View
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleDownloadFile(fileUrl, fileName)}
-                                style={{ background: '#0038FF', color: '#ffffff', border: 'none', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
-                              >
-                                📥 Download
-                              </button>
+                              {!fileUrl || fileUrl === '#' ? (
+                                <span style={{ fontSize: '11px', color: '#94a3b8', fontStyle: 'italic', padding: '4px 8px', background: '#f1f5f9', borderRadius: '4px' }}>
+                                  File unavailable (Old test ticket)
+                                </span>
+                              ) : (
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleViewFile(fileUrl, fileName)}
+                                    style={{ background: '#f1f5f9', color: '#334155', border: '1px solid #cbd5e1', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
+                                  >
+                                    👁️ View
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDownloadFile(fileUrl, fileName)}
+                                    style={{ background: '#0038FF', color: '#ffffff', border: 'none', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
+                                  >
+                                    📥 Download
+                                  </button>
+                                </>
+                              )}
                             </div>
                           </li>
                         )
@@ -1058,20 +1066,28 @@ Aionion Capital
                           <li key={i} style={{ marginBottom: '6px', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#f0fdf4', padding: '8px 12px', borderRadius: '6px', border: '1px solid #dcfce7' }}>
                             <span style={{ fontWeight: '600', color: '#166534', flex: 1, marginRight: '8px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>🛡️ {fileName}</span>
                             <div style={{ display: 'flex', gap: '6px' }}>
-                              <button
-                                type="button"
-                                onClick={() => handleViewFile(fileUrl)}
-                                style={{ background: '#ffffff', color: '#166534', border: '1px solid #bbf7d0', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
-                              >
-                                👁️ View
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleDownloadFile(fileUrl, fileName)}
-                                style={{ background: '#16a34a', color: '#ffffff', border: 'none', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
-                              >
-                                📥 Download
-                              </button>
+                              {!fileUrl || fileUrl === '#' ? (
+                                <span style={{ fontSize: '11px', color: '#94a3b8', fontStyle: 'italic', padding: '4px 8px', background: '#f8fafc', borderRadius: '4px' }}>
+                                  File unavailable (Old test ticket)
+                                </span>
+                              ) : (
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleViewFile(fileUrl, fileName)}
+                                    style={{ background: '#ffffff', color: '#166534', border: '1px solid #bbf7d0', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
+                                  >
+                                    👁️ View
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDownloadFile(fileUrl, fileName)}
+                                    style={{ background: '#16a34a', color: '#ffffff', border: 'none', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
+                                  >
+                                    📥 Download
+                                  </button>
+                                </>
+                              )}
                             </div>
                           </li>
                         )
