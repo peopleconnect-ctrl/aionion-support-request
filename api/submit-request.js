@@ -49,7 +49,6 @@ export default async function handler(req, res) {
         'peopleconnect@aionioncapital.com',
         'naveenkumar.k@aionioncapital.com',
         'balakumar.elango@aionioncapital.com',
-        'anuradha.k@aionioncapital.com',
         data.approver_email
       ].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i && v !== requesterEmail)
 
@@ -172,13 +171,12 @@ export default async function handler(req, res) {
 
     // 4. Send Professional Acknowledgement Email via Google SMTP
     const requesterEmail = data.email || 'peopleconnect@aionioncapital.com'
-      const ccList = [
-        'peopleconnect@aionioncapital.com',
-        'naveenkumar.k@aionioncapital.com',
-        'balakumar.elango@aionioncapital.com',
-        'anuradha.k@aionioncapital.com',
-        data.approver_email
-      ].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i && v !== requesterEmail)
+    const ccList = [
+      'peopleconnect@aionioncapital.com',
+      'naveenkumar.k@aionioncapital.com',
+      'balakumar.elango@aionioncapital.com',
+      data.approver_email
+    ].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i && v !== requesterEmail)
 
     const ackHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background: #ffffff;">
