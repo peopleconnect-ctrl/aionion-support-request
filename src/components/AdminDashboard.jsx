@@ -182,6 +182,9 @@ export default function AdminDashboard({ onSwitchToForm, onLogout }) {
     }
   }
 
+  // In-App File Preview Modal State
+  const [previewModalFile, setPreviewModalFile] = useState(null)
+
   // Programmatic File Download and Preview Handlers
   const handleDownloadFile = (url, name) => {
     if (!url || url === '#') return
@@ -216,21 +219,15 @@ export default function AdminDashboard({ onSwitchToForm, onLogout }) {
   const handleViewFile = (url, name) => {
     if (!url || url === '#') return
     let targetUrl = url
-    let tempBlobUrl = null
 
     if (url.startsWith('data:')) {
       const blob = dataURLtoBlob(url)
       if (blob) {
-        tempBlobUrl = URL.createObjectURL(blob)
-        targetUrl = tempBlobUrl
+        targetUrl = URL.createObjectURL(blob)
       }
     }
 
-    window.open(targetUrl, '_blank')
-
-    if (tempBlobUrl) {
-      setTimeout(() => URL.revokeObjectURL(tempBlobUrl), 60000)
-    }
+    setPreviewModalFile({ url: targetUrl, name: name || 'File Preview' })
   }
 
   // Save Updates & Trigger Completion Email
@@ -1216,6 +1213,52 @@ Aionion Capital
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* IN-APP FILE PREVIEW MODAL */}
+      {previewModalFile && (
+        <div className="modal-overlay" style={{ zIndex: 10000 }} onClick={() => setPreviewModalFile(null)}>
+          <div
+            className="modal-content"
+            style={{ maxWidth: '900px', width: '92%', height: '85vh', padding: '20px', display: 'flex', flexDirection: 'column', background: '#ffffff', borderRadius: '16px' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px', marginBottom: '12px' }}>
+              <h3 style={{ margin: 0, fontSize: '17px', fontWeight: '800', color: '#0f172a' }}>
+                📄 {previewModalFile.name}
+              </h3>
+              <button
+                onClick={() => setPreviewModalFile(null)}
+                style={{ background: '#f1f5f9', border: 'none', borderRadius: '50%', width: '32px', height: '32px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ flex: 1, width: '100%', height: '100%', overflow: 'hidden', background: '#0f172a', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {previewModalFile.url.startsWith('data:image') || previewModalFile.url.match(/\.(png|jpe?g|gif|svg|webp)/i) ? (
+                <img src={previewModalFile.url} alt="Preview" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+              ) : (
+                <iframe src={previewModalFile.url} title="Document Preview" style={{ width: '100%', height: '100%', border: 'none' }} />
+              )}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '14px' }}>
+              <button
+                onClick={() => handleDownloadFile(previewModalFile.url, previewModalFile.name)}
+                style={{ background: '#0038FF', color: '#ffffff', border: 'none', padding: '9px 22px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}
+              >
+                📥 Download File
+              </button>
+              <button
+                onClick={() => setPreviewModalFile(null)}
+                style={{ background: '#f1f5f9', color: '#334155', border: '1px solid #cbd5e1', padding: '9px 20px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}
+              >
+                Close Preview
+              </button>
             </div>
           </div>
         </div>
