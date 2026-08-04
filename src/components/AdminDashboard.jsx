@@ -38,28 +38,36 @@ export default function AdminDashboard({ onSwitchToForm, onLogout }) {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
   const deliverableInputRef = useRef(null)
 
-  // Fetch Requests from Supabase (with localStorage fallback)
+  // Fetch Requests from Vercel Serverless API & Supabase (with localStorage fallback)
   const fetchRequests = async () => {
     setLoading(true)
     let fetchedData = []
-    let supabaseSuccess = false
 
+    // 1. Primary Fetch: Call Serverless API (/api/get-requests) which queries Supabase server-side
     try {
-      if (supabase) {
+      const res = await fetch('/api/get-requests')
+      const data = await res.json()
+      if (Array.isArray(data) && data.length > 0) {
+        fetchedData = data
+      }
+    } catch (apiErr) {
+      console.warn('Serverless API fetch notice:', apiErr)
+    }
+
+    // 2. Client-side Supabase fetch fallback
+    if (fetchedData.length === 0 && supabase) {
+      try {
         const { data, error } = await supabase
           .from('support_requests')
           .select('*')
           .order('created_at', { ascending: false })
 
-        if (!error && data) {
+        if (!error && data && data.length > 0) {
           fetchedData = data
-          supabaseSuccess = true
-        } else if (error) {
-          console.warn('Supabase fetch error:', error.message)
         }
+      } catch (err) {
+        console.warn('Client Supabase fetch notice:', err)
       }
-    } catch (err) {
-      console.warn('Error fetching requests from Supabase:', err)
     }
 
     // If Supabase fetch was empty or failed, attempt to fetch from Google Apps Script
