@@ -74,11 +74,23 @@ function App() {
     }
   }
 
-  // Reference Files Selection & Drag Drop
+  // Reference Files Selection & Drag Drop (Max 2.5MB for PDFs/documents, images auto-compressed)
   const handleFileAdd = (files) => {
-    const validFiles = Array.from(files).filter(
-      (file) => file.size <= 10 * 1024 * 1024 // 10MB limit
-    )
+    const validFiles = []
+    const oversizedFiles = []
+
+    Array.from(files).forEach((file) => {
+      if (!file.type.startsWith('image/') && file.size > 2.5 * 1024 * 1024) {
+        oversizedFiles.push(file.name)
+      } else {
+        validFiles.push(file)
+      }
+    })
+
+    if (oversizedFiles.length > 0) {
+      alert(`⚠️ The following PDF/document files exceed the 2.5MB size limit:\n\n${oversizedFiles.join('\n')}\n\nPlease attach smaller PDF files or compressed images.`)
+    }
+
     setUploadedFiles((prev) => [...prev, ...validFiles])
   }
 
@@ -88,9 +100,21 @@ function App() {
 
   // Approval Screenshot Selection & Drag Drop
   const handleApprovalFileAdd = (files) => {
-    const validFiles = Array.from(files).filter(
-      (file) => file.size <= 10 * 1024 * 1024 // 10MB limit
-    )
+    const validFiles = []
+    const oversizedFiles = []
+
+    Array.from(files).forEach((file) => {
+      if (!file.type.startsWith('image/') && file.size > 2.5 * 1024 * 1024) {
+        oversizedFiles.push(file.name)
+      } else {
+        validFiles.push(file)
+      }
+    })
+
+    if (oversizedFiles.length > 0) {
+      alert(`⚠️ The following PDF/document files exceed the 2.5MB size limit:\n\n${oversizedFiles.join('\n')}\n\nPlease attach smaller PDF files or compressed images.`)
+    }
+
     setApprovalFiles((prev) => [...prev, ...validFiles])
   }
 
@@ -145,6 +169,10 @@ function App() {
     const compressImageIfNeeded = (file) =>
       new Promise((resolve) => {
         if (!file.type.startsWith('image/')) {
+          if (file.size > 2.5 * 1024 * 1024) {
+            resolve('#')
+            return
+          }
           const reader = new FileReader()
           reader.onload = (e) => resolve(e.target.result)
           reader.onerror = () => resolve('#')
