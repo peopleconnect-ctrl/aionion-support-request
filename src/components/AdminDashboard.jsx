@@ -35,6 +35,7 @@ export default function AdminDashboard({ onSwitchToForm, onLogout }) {
   const [deliverableFiles, setDeliverableFiles] = useState([])
   const [isUploading, setIsUploading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
   const deliverableInputRef = useRef(null)
 
   // Fetch Requests from Supabase (with localStorage fallback)
@@ -61,11 +62,26 @@ export default function AdminDashboard({ onSwitchToForm, onLogout }) {
       console.warn('Error fetching requests from Supabase:', err)
     }
 
+    // If Supabase fetch was empty or failed, attempt to fetch from Google Apps Script
+    if (fetchedData.length === 0) {
+      try {
+        const DEFAULT_GAS_URL = 'https://script.google.com/a/macros/aionioncapital.com/s/AKfycbyPMtG7VrD6z_GVZzlb8xGmOxR_DkFxkWzplTGfdy6p0zNC_pyOTQCxCYZsf-uECwpxLQ/exec'
+        const gasUrl = import.meta.env.VITE_GOOGLE_APPS_SCRIPT_URL || DEFAULT_GAS_URL
+        const res = await fetch(gasUrl)
+        const gasJson = await res.json()
+        if (Array.isArray(gasJson) && gasJson.length > 0) {
+          fetchedData = gasJson
+        }
+      } catch (gasErr) {
+        console.warn('Google Apps Script fetch notice:', gasErr)
+      }
+    }
+
     // Merge with local storage fallback
     try {
       const localData = JSON.parse(localStorage.getItem('aionion_support_requests') || '[]')
       if (localData.length > 0) {
-        // Combine Supabase and local storage without duplicates
+        // Combine fetched and local storage without duplicates
         const existingRefIds = new Set(fetchedData.map((item) => item.reference_id))
         const missingLocal = localData.filter((item) => !existingRefIds.has(item.reference_id))
         fetchedData = [...fetchedData, ...missingLocal]
@@ -451,17 +467,32 @@ Aionion Capital
 
   return (
     <div className="portal-shell">
+      {/* Mobile Drawer Backdrop */}
+      {isMobileSidebarOpen && (
+        <div
+          className="sidebar-mobile-backdrop"
+          onClick={() => setIsMobileSidebarOpen(false)}
+        />
+      )}
+
       {/* LEFT SIDEBAR NAVIGATION */}
-      <aside className="portal-sidebar">
+      <aside className={`portal-sidebar ${isMobileSidebarOpen ? 'mobile-open' : ''}`}>
         {/* Brand Logo Header */}
         <div className="sidebar-brand-box">
           <img src={logoImg} alt="Aionion Capital Logo" className="sidebar-logo-img" />
+          <button
+            className="mobile-sidebar-close-btn"
+            onClick={() => setIsMobileSidebarOpen(false)}
+            title="Close Menu"
+          >
+            ✕
+          </button>
         </div>
 
         {/* Sidebar Nav Links */}
         <nav className="sidebar-nav">
           <button
-            onClick={() => setActiveTab('dashboard')}
+            onClick={() => { setActiveTab('dashboard'); setIsMobileSidebarOpen(false); }}
             className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -474,7 +505,7 @@ Aionion Capital
           </button>
 
           <button
-            onClick={() => setActiveTab('requests')}
+            onClick={() => { setActiveTab('requests'); setIsMobileSidebarOpen(false); }}
             className={`nav-item ${activeTab === 'requests' ? 'active' : ''}`}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -488,7 +519,7 @@ Aionion Capital
           </button>
 
           <button
-            onClick={() => setActiveTab('categories')}
+            onClick={() => { setActiveTab('categories'); setIsMobileSidebarOpen(false); }}
             className={`nav-item ${activeTab === 'categories' ? 'active' : ''}`}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -498,7 +529,7 @@ Aionion Capital
           </button>
 
           <button
-            onClick={() => setActiveTab('reports')}
+            onClick={() => { setActiveTab('reports'); setIsMobileSidebarOpen(false); }}
             className={`nav-item ${activeTab === 'reports' ? 'active' : ''}`}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -527,14 +558,27 @@ Aionion Capital
       <main className="portal-main">
         {/* Top Navbar */}
         <header className="portal-topbar">
-          <div className="topbar-left">
-            <h1 className="topbar-title">
-              {activeTab === 'dashboard' && 'Dashboard Overview'}
-              {activeTab === 'requests' && 'Request Management'}
-              {activeTab === 'categories' && 'Request Categories'}
-              {activeTab === 'reports' && 'Reports & Analytics'}
-            </h1>
-            <p className="topbar-sub">Welcome back, Admin! Here's what's happening today.</p>
+          <div className="topbar-left-group">
+            <button
+              className="mobile-hamburger-btn"
+              onClick={() => setIsMobileSidebarOpen(true)}
+              title="Open Navigation Menu"
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            </button>
+            <div className="topbar-left">
+              <h1 className="topbar-title">
+                {activeTab === 'dashboard' && 'Dashboard Overview'}
+                {activeTab === 'requests' && 'Request Management'}
+                {activeTab === 'categories' && 'Request Categories'}
+                {activeTab === 'reports' && 'Reports & Analytics'}
+              </h1>
+              <p className="topbar-sub">Welcome back, Admin! Here's what's happening today.</p>
+            </div>
           </div>
 
           <div className="topbar-right">
@@ -543,7 +587,7 @@ Aionion Capital
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />
               </svg>
-              Submit Request Form
+              <span>Submit Request Form</span>
             </button>
 
             <div className="user-avatar-badge">

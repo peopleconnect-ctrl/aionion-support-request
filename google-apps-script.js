@@ -37,6 +37,89 @@ function testEmailAndSheet() {
   Logger.log("Test execution result: " + response.getContent());
 }
 
+// OPTIONAL: If your Apps Script is standalone (not container-bound inside the Sheet), paste your Google Sheet ID here:
+// Example: var SPREADSHEET_ID = "1aB2c3D4e5F6g7H8i9J0...";
+var SPREADSHEET_ID = "";
+
+function doGet(e) {
+  try {
+    var ss = getTargetSpreadsheet();
+    if (!ss) {
+      return ContentService
+        .createTextOutput(JSON.stringify({ result: "error", message: "Spreadsheet not found" }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    var sheet = ss.getSheetByName("Support Requests") || ss.getSheets()[0];
+    var data = sheet.getDataRange().getValues();
+    if (data.length <= 1) {
+      return ContentService
+        .createTextOutput(JSON.stringify([]))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    var headers = data[0];
+    var rows = [];
+    for (var i = 1; i < data.length; i++) {
+      var row = data[i];
+      rows.push({
+        reference_id: row[0] || "",
+        created_at: row[1] || "",
+        full_name: row[2] || "",
+        employee_code: row[3] || "",
+        department: row[4] || "",
+        email: row[5] || "",
+        contact_number: row[6] || "",
+        branch_location: row[7] || "",
+        request_category: row[8] || "",
+        target_audience: row[9] || "",
+        purpose_of_request: row[10] || "",
+        required_by: row[11] || "",
+        priority_level: row[12] || "Normal",
+        approver_name: row[13] || "",
+        approver_email: row[14] || "",
+        approver_department: row[15] || "",
+        status: row[16] || "Pending"
+      });
+    }
+
+    return ContentService
+      .createTextOutput(JSON.stringify(rows))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ result: "error", message: err.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function getTargetSpreadsheet() {
+  var ss = null;
+  // 1. Try active bound spreadsheet
+  try {
+    ss = SpreadsheetApp.getActiveSpreadsheet();
+  } catch (err) {}
+
+  // 2. Try explicitly configured SPREADSHEET_ID
+  if (!ss && SPREADSHEET_ID && SPREADSHEET_ID.trim() !== "") {
+    try {
+      ss = SpreadsheetApp.openById(SPREADSHEET_ID.trim());
+    } catch (err) {}
+  }
+
+  // 3. Fallback to DriveApp search by name
+  if (!ss) {
+    try {
+      var files = DriveApp.getFilesByName("Aionion Support Requests");
+      if (files.hasNext()) {
+        ss = SpreadsheetApp.open(files.next());
+      }
+    } catch (driveErr) {}
+  }
+
+  return ss;
+}
+
 function doPost(e) {
   try {
     var contents = e && e.postData && e.postData.contents ? e.postData.contents : null;
@@ -73,26 +156,8 @@ function doPost(e) {
       console.error("Requester email error:", reqEmailErr);
     }
 
-    // 3. Get Spreadsheet (Active or Open by ID)
-    var ss = null;
-    try {
-      ss = SpreadsheetApp.getActiveSpreadsheet();
-    } catch (err) {
-      console.warn("getActiveSpreadsheet notice:", err);
-    }
-
-    // If container-bound getActiveSpreadsheet failed, attempt to get default or open active
-    if (!ss) {
-      try {
-        var files = DriveApp.getFilesByName("Aionion Support Requests");
-        if (files.hasNext()) {
-          var file = files.next();
-          ss = SpreadsheetApp.open(file);
-        }
-      } catch (driveErr) {
-        console.warn("DriveApp open notice:", driveErr);
-      }
-    }
+    // 3. Get Spreadsheet
+    var ss = getTargetSpreadsheet();
 
     // 4. Log to Sheet if Spreadsheet found
     if (ss) {
