@@ -279,12 +279,17 @@ function App() {
         created_at: new Date().toISOString()
       }
 
-      // Save to localStorage as instant fallback
+      // Save to localStorage (lightweight metadata only to avoid QuotaExceededError)
       try {
+        const cleanRecordForLocal = {
+          ...newRecord,
+          reference_file_urls: (newRecord.reference_file_urls || []).map(f => ({ name: f.name, url: '#' })),
+          approval_file_urls: (newRecord.approval_file_urls || []).map(f => ({ name: f.name, url: '#' }))
+        }
         const existingLocal = JSON.parse(localStorage.getItem('aionion_support_requests') || '[]')
-        localStorage.setItem('aionion_support_requests', JSON.stringify([newRecord, ...existingLocal]))
+        localStorage.setItem('aionion_support_requests', JSON.stringify([cleanRecordForLocal, ...existingLocal].slice(0, 20)))
       } catch (err) {
-        console.warn('LocalStorage save error:', err)
+        console.warn('LocalStorage save notice:', err)
       }
 
       // 1. Primary Submission: Vercel Serverless API Endpoint (/api/submit-request)
