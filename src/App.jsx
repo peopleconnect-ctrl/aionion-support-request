@@ -181,6 +181,12 @@ function App() {
         reader.readAsDataURL(file)
       })
 
+    const withTimeout = (promise, ms = 2000) =>
+      Promise.race([
+        promise,
+        new Promise((resolve) => setTimeout(() => resolve({ timeout: true }), ms))
+      ])
+
     try {
       let refFileUrls = []
       let approvalFileUrls = []
@@ -192,8 +198,11 @@ function App() {
           try {
             const fileExt = file.name.split('.').pop()
             const filePath = `reference-files/${generatedId}_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`
-            const { error: uploadError } = await supabase.storage.from('support-attachments').upload(filePath, file)
-            if (!uploadError) {
+            const res = await withTimeout(
+              supabase.storage.from('support-attachments').upload(filePath, file),
+              2000
+            )
+            if (res && !res.timeout && !res.error) {
               const { data: publicUrlData } = supabase.storage.from('support-attachments').getPublicUrl(filePath)
               if (publicUrlData?.publicUrl) publicUrl = publicUrlData.publicUrl
             }
@@ -214,8 +223,11 @@ function App() {
           try {
             const fileExt = file.name.split('.').pop()
             const filePath = `approval-proofs/${generatedId}_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`
-            const { error: uploadError } = await supabase.storage.from('support-attachments').upload(filePath, file)
-            if (!uploadError) {
+            const res = await withTimeout(
+              supabase.storage.from('support-attachments').upload(filePath, file),
+              2000
+            )
+            if (res && !res.timeout && !res.error) {
               const { data: publicUrlData } = supabase.storage.from('support-attachments').getPublicUrl(filePath)
               if (publicUrlData?.publicUrl) publicUrl = publicUrlData.publicUrl
             }
@@ -273,12 +285,12 @@ function App() {
         console.warn('LocalStorage save error:', err)
       }
 
-      // Insert record into Supabase support_requests table
+      // Insert record into Supabase support_requests table (with timeout)
       if (supabase) {
         try {
-          const { error } = await supabase.from('support_requests').insert([newRecord])
-          if (error) {
-            console.error('Supabase Insert Error:', error.message)
+          const insertRes = await withTimeout(supabase.from('support_requests').insert([newRecord]), 2000)
+          if (insertRes && insertRes.error) {
+            console.error('Supabase Insert Error:', insertRes.error.message)
           }
         } catch (e) {
           console.warn('Supabase insert notice:', e)
