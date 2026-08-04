@@ -249,34 +249,66 @@ export default async function handler(req, res) {
       ...(data.approval_file_urls || [])
     ]
 
-    const mailAttachments = prepareNodemailerAttachments(allRequesterFiles)
-
+    const mailAttachments = []
     let requesterFilesHtml = ''
+
     if (allRequesterFiles.length > 0) {
       requesterFilesHtml = `
         <h3 style="color: #0038FF; font-size: 14px; border-bottom: 2px solid #eff6ff; padding-bottom: 8px; margin-top: 24px; text-transform: uppercase; letter-spacing: 0.5px;">
           📎 Requester Attached Files / Artwork References
         </h3>
         <div style="margin-bottom: 20px;">
-          ${allRequesterFiles.map((f, i) => {
-            const isDataUrl = f.url && f.url.startsWith('data:')
-            return `
-              <div style="padding: 10px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 8px; font-size: 13px;">
-                <div style="font-weight: bold; color: #334155; margin-bottom: 6px;">📄 ${f.name || `Attachment #${i + 1}`}</div>
-                ${isDataUrl ? `
+      `
+
+      allRequesterFiles.forEach((f, i) => {
+        const fileName = f.name || `Attachment_${i + 1}`
+        const fileUrl = f.url || (typeof f === 'string' ? f : null)
+        const cidName = `req_attachment_${i}`
+
+        if (fileUrl && fileUrl !== '#') {
+          if (fileUrl.startsWith('data:')) {
+            const matches = fileUrl.match(/^data:(.+?);base64,(.+)$/)
+            if (matches) {
+              const mimeType = matches[1] || 'application/octet-stream'
+              const base64Data = matches[2]
+
+              mailAttachments.push({
+                filename: fileName,
+                content: Buffer.from(base64Data, 'base64'),
+                contentType: mimeType,
+                cid: cidName
+              })
+
+              const isImage = mimeType.startsWith('image/')
+              requesterFilesHtml += `
+                <div style="padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 10px; font-size: 13px;">
+                  <div style="font-weight: bold; color: #334155; margin-bottom: 6px;">📄 ${fileName}</div>
+                  ${isImage ? `<div style="margin: 8px 0;"><img src="cid:${cidName}" alt="${fileName}" style="max-width: 100%; max-height: 280px; border-radius: 6px; border: 1px solid #cbd5e1;" /></div>` : ''}
                   <div style="color: #0038FF; font-weight: bold; font-size: 12px; background: #EEF2FF; padding: 6px 12px; border-radius: 6px; display: inline-block;">
-                    📎 Attached directly as email file (Check Gmail attachments below)
+                    📎 Attached to this email (Check email attachment bar to download)
                   </div>
-                ` : `
-                  <a href="${f.url}" download="${f.name || 'attachment'}" target="_blank" style="background: #0038FF; color: #ffffff; padding: 6px 14px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 12px; display: inline-block;">
-                    📥 Download Attachment
-                  </a>
-                `}
+                </div>
+              `
+            }
+          } else if (fileUrl.startsWith('http')) {
+            mailAttachments.push({
+              filename: fileName,
+              path: fileUrl
+            })
+
+            requesterFilesHtml += `
+              <div style="padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 10px; font-size: 13px;">
+                <div style="font-weight: bold; color: #334155; margin-bottom: 6px;">📄 ${fileName}</div>
+                <a href="${fileUrl}" download="${fileName}" target="_blank" style="background: #0038FF; color: #ffffff; padding: 6px 14px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 12px; display: inline-block;">
+                  📥 Click to Download Attachment
+                </a>
               </div>
             `
-          }).join('')}
-        </div>
-      `
+          }
+        }
+      })
+
+      requesterFilesHtml += `</div>`
     }
 
     // 4. Send Professional Acknowledgement Email via Google SMTP
