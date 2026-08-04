@@ -1,6 +1,14 @@
 import { createClient } from '@supabase/supabase-js'
 import nodemailer from 'nodemailer'
 
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '4.5mb'
+    }
+  }
+}
+
 const appPassword = process.env.GMAIL_APP_PASSWORD || 'fvszdczjvpchersd'
 
 const transporter = nodemailer.createTransport({
