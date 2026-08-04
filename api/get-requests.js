@@ -30,7 +30,7 @@ export default async function handler(req, res) {
 
     if (error) {
       console.warn('Supabase Server Fetch Error:', error.message)
-      return res.status(200).json([])
+      return res.status(200).json({ error: error.message, hint: error.hint, details: error.details })
     }
 
     return res.status(200).json(data || [])
