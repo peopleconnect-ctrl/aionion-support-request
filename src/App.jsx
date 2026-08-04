@@ -287,19 +287,8 @@ function App() {
         console.warn('LocalStorage save error:', err)
       }
 
-      // Insert record into Supabase support_requests table (with timeout)
-      if (supabase) {
-        try {
-          const insertRes = await withTimeout(supabase.from('support_requests').insert([newRecord]), 2000)
-          if (insertRes && insertRes.error) {
-            console.error('Supabase Insert Error:', insertRes.error.message)
-          }
-        } catch (e) {
-          console.warn('Supabase insert notice:', e)
-        }
-      }
-
-      // 1. Send payload to Vercel Serverless API endpoint (/api/submit-request)
+      // 1. Primary Submission: Vercel Serverless API Endpoint (/api/submit-request)
+      // Handles instant email dispatch via Nodemailer & server-side Supabase DB insert
       try {
         const apiUrl = `${window.location.origin}/api/submit-request`
         const res = await fetch(apiUrl, {
@@ -311,6 +300,18 @@ function App() {
         console.log('Submit Request API Result:', resData)
       } catch (apiErr) {
         console.warn('Serverless API notice:', apiErr)
+      }
+
+      // 2. Client-side Supabase insert fallback (with timeout)
+      if (supabase) {
+        try {
+          const insertRes = await withTimeout(supabase.from('support_requests').insert([newRecord]), 2000)
+          if (insertRes && insertRes.error) {
+            console.error('Supabase Insert Error:', insertRes.error.message)
+          }
+        } catch (e) {
+          console.warn('Supabase insert notice:', e)
+        }
       }
 
       // 2. Direct browser fallback to Google Apps Script (Handles native emails & Sheet logging)
@@ -1193,6 +1194,24 @@ Automated notification from Corporate Support Portal.
 
         {/* Form Submission Actions */}
         <div className="submit-area" style={{ marginTop: '32px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+          {Object.keys(errors).length > 0 && (
+            <div style={{
+              background: '#FEF2F2',
+              border: '2px solid #EF4444',
+              borderRadius: '12px',
+              padding: '14px 20px',
+              color: '#991B1B',
+              fontSize: '14px',
+              fontWeight: '700',
+              textAlign: 'center',
+              width: '100%',
+              maxWidth: '600px',
+              boxShadow: '0 4px 12px rgba(239, 68, 68, 0.15)'
+            }}>
+              ⚠️ Please fill out all required fields marked with * ({Object.keys(errors).length} required field{Object.keys(errors).length > 1 ? 's' : ''} missing).
+            </div>
+          )}
+
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
             <button type="button" onClick={handleReset} className="btn-secondary" style={{ padding: '18px 32px', fontSize: '15px', borderRadius: '50px' }}>
               Clear Form
