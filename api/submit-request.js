@@ -202,7 +202,8 @@ export default async function handler(req, res) {
     // ACTION B: NEW SUPPORT REQUEST SUBMISSION
     // -------------------------------------------------------------
     // 1. Insert into Supabase (if credentials configured)
-    const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL
+    const rawUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || 'https://jyiadawynwjcluvrgoqi.supabase.co'
+    const supabaseUrl = rawUrl.replace(/\/rest\/v1\/?$/i, '').replace(/\/$/, '')
     const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
 
     if (supabaseUrl && supabaseKey) {
