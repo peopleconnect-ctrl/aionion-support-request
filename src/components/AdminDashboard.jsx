@@ -70,21 +70,6 @@ export default function AdminDashboard({ onSwitchToForm, onLogout }) {
       }
     }
 
-    // If Supabase fetch was empty or failed, attempt to fetch from Google Apps Script
-    if (fetchedData.length === 0) {
-      try {
-        const DEFAULT_GAS_URL = 'https://script.google.com/a/macros/aionioncapital.com/s/AKfycbyPMtG7VrD6z_GVZzlb8xGmOxR_DkFxkWzplTGfdy6p0zNC_pyOTQCxCYZsf-uECwpxLQ/exec'
-        const gasUrl = import.meta.env.VITE_GOOGLE_APPS_SCRIPT_URL || DEFAULT_GAS_URL
-        const res = await fetch(gasUrl)
-        const gasJson = await res.json()
-        if (Array.isArray(gasJson) && gasJson.length > 0) {
-          fetchedData = gasJson
-        }
-      } catch (gasErr) {
-        console.warn('Google Apps Script fetch notice:', gasErr)
-      }
-    }
-
     // Merge with local storage fallback
     try {
       const localData = JSON.parse(localStorage.getItem('aionion_support_requests') || '[]')
