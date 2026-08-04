@@ -43,31 +43,15 @@ export default function AdminDashboard({ onSwitchToForm, onLogout }) {
     setLoading(true)
     let fetchedData = []
 
-    // 1. Primary Fetch: Call Serverless API (/api/get-requests) which queries Supabase server-side
+    // 1. Primary Fetch: Call Serverless API (/api/get-requests) with timestamp to bypass browser cache
     try {
-      const res = await fetch('/api/get-requests')
+      const res = await fetch(`/api/get-requests?t=${Date.now()}`)
       const data = await res.json()
-      if (Array.isArray(data) && data.length > 0) {
+      if (Array.isArray(data)) {
         fetchedData = data
       }
     } catch (apiErr) {
       console.warn('Serverless API fetch notice:', apiErr)
-    }
-
-    // 2. Client-side Supabase fetch fallback
-    if (fetchedData.length === 0 && supabase) {
-      try {
-        const { data, error } = await supabase
-          .from('support_requests')
-          .select('*')
-          .order('created_at', { ascending: false })
-
-        if (!error && data && data.length > 0) {
-          fetchedData = data
-        }
-      } catch (err) {
-        console.warn('Client Supabase fetch notice:', err)
-      }
     }
 
     // Merge with local storage fallback
