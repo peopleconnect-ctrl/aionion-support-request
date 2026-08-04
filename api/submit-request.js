@@ -249,14 +249,23 @@ export default async function handler(req, res) {
           📎 Requester Attached Files / Artwork References
         </h3>
         <div style="margin-bottom: 20px;">
-          ${allRequesterFiles.map((f, i) => `
-            <div style="padding: 10px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 8px; font-size: 13px;">
-              <div style="font-weight: bold; color: #334155; margin-bottom: 6px;">📄 ${f.name || `Attachment #${i + 1}`}</div>
-              <a href="${f.url}" download="${f.name || 'attachment'}" target="_blank" style="background: #0038FF; color: #ffffff; padding: 6px 14px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 12px; display: inline-block;">
-                📥 Download Attachment
-              </a>
-            </div>
-          `).join('')}
+          ${allRequesterFiles.map((f, i) => {
+            const isDataUrl = f.url && f.url.startsWith('data:')
+            return `
+              <div style="padding: 10px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 8px; font-size: 13px;">
+                <div style="font-weight: bold; color: #334155; margin-bottom: 6px;">📄 ${f.name || `Attachment #${i + 1}`}</div>
+                ${isDataUrl ? `
+                  <div style="color: #0038FF; font-weight: bold; font-size: 12px; background: #EEF2FF; padding: 6px 12px; border-radius: 6px; display: inline-block;">
+                    📎 Attached directly as email file (Check Gmail attachments below)
+                  </div>
+                ` : `
+                  <a href="${f.url}" download="${f.name || 'attachment'}" target="_blank" style="background: #0038FF; color: #ffffff; padding: 6px 14px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 12px; display: inline-block;">
+                    📥 Download Attachment
+                  </a>
+                `}
+              </div>
+            `
+          }).join('')}
         </div>
       `
     }
