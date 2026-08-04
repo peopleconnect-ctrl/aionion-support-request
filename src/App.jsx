@@ -122,17 +122,19 @@ function App() {
     if (!formData.approverDepartment) newErrors.approverDepartment = 'Approver Department is required'
 
     setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+    return newErrors
   }
 
   // Submit Handler
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!validateForm()) {
-      const firstErrorKey = Object.keys(errors)[0]
-      const element = document.getElementsByName(firstErrorKey)[0]
+    const validationErrors = validateForm()
+    if (Object.keys(validationErrors).length > 0) {
+      const firstErrorKey = Object.keys(validationErrors)[0]
+      const element = document.getElementsByName(firstErrorKey)[0] || document.querySelector(`[name="${firstErrorKey}"]`)
       if (element) {
         element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        element.focus()
       }
       return
     }
