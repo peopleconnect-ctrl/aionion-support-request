@@ -28,7 +28,7 @@ export default async function handler(req, res) {
     const supabase = createClient(supabaseUrl, supabaseKey)
     const { data, error } = await supabase
       .from('support_requests')
-      .select('id, reference_id, full_name, employee_code, department, email, contact_number, branch_location, request_category, target_audience, purpose_of_request, required_by, priority_level, approver_name, approver_email, approver_department, reference_file_urls, approval_file_urls, deliverable_files, status, created_at')
+      .select('id, reference_id, full_name, employee_code, department, email, contact_number, branch_location, request_category, target_audience, purpose_of_request, required_by, priority_level, approver_name, approver_email, approver_department, reference_file_urls, approval_file_urls, deliverable_file_urls, status, created_at')
       .order('created_at', { ascending: false })
 
     if (error) {
