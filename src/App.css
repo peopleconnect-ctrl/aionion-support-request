@@ -21,11 +21,11 @@
 /* Unified Top Header & Hero Card */
 .form-header-card {
   position: relative;
-  background: linear-gradient(135deg, #FFFFFF 0%, #F4F7FC 60%, #FFF5F7 100%);
-  border: 1px solid var(--border-card);
+  background: linear-gradient(135deg, #FAF7F2 0%, #FFFDFA 50%, #FDF4F5 100%);
+  border: 1px solid #E6DFD4;
   border-radius: 24px;
   padding: 36px 40px 24px;
-  box-shadow: 0 15px 40px rgba(11, 25, 54, 0.04);
+  box-shadow: 0 16px 40px rgba(15, 33, 71, 0.05);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -97,9 +97,9 @@
   position: relative;
   z-index: 2;
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-between;
   align-items: center;
-  margin-bottom: -10px;
+  margin-bottom: -4px;
   padding: 0;
 }
 
@@ -108,7 +108,48 @@
   width: auto;
   object-fit: contain;
   margin-left: 0;
-  filter: drop-shadow(0 4px 10px rgba(0, 56, 255, 0.08));
+  filter: drop-shadow(0 4px 10px rgba(15, 33, 71, 0.08));
+}
+
+.brand-header-tagline {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--brand-navy);
+  line-height: 1.35;
+  text-align: right;
+}
+
+.brand-header-tagline .highlight-red {
+  color: var(--brand-red);
+  font-weight: 800;
+}
+
+/* Welcome Handwriting Script Tag */
+.welcome-script-tag {
+  position: relative;
+  display: inline-block;
+  font-family: var(--font-handwriting);
+  font-size: 38px;
+  color: var(--brand-navy);
+  font-weight: 600;
+  line-height: 1;
+  margin-bottom: -6px;
+}
+
+.welcome-script-tag .script-underline {
+  position: absolute;
+  bottom: -4px;
+  left: 2px;
+  width: 75%;
+  height: 3px;
+  background: var(--brand-red);
+  border-radius: 2px;
+  transform: rotate(-1.5deg);
 }
 
 /* Hero Layout Grid & Laptop Mockup Positioning */
@@ -132,14 +173,15 @@
 .hero-text-content {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
+  min-width: 0;
 }
 
-/* Main Title - Adjusted Font Size to Fit Cleanly in Exactly 2 Lines */
+/* Main Title - Clean 4-Line Layout */
 .main-title {
   font-size: 28px;
   font-weight: 800;
-  line-height: 1.25;
+  line-height: 1.2;
   color: var(--brand-navy);
   letter-spacing: -0.3px;
   text-transform: uppercase;
@@ -154,18 +196,25 @@
 }
 
 .title-highlight {
-  background: linear-gradient(90deg, #FF3B6B 0%, #E6005C 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--brand-red);
+  -webkit-text-fill-color: initial;
+  background: none;
   display: inline-block;
 }
 
 .hero-subtitle {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   font-size: 15px;
   color: var(--text-muted);
-  line-height: 1.6;
+  line-height: 1.45;
   font-weight: 500;
-  max-width: 480px;
+  max-width: 540px;
+}
+
+.hero-subtitle span {
+  display: block;
 }
 
 .hero-illustration {
@@ -184,12 +233,25 @@
   width: 100%;
   max-width: 560px;
   height: auto;
+  object-fit: contain;
+  display: block;
   filter: drop-shadow(0 20px 40px rgba(11, 25, 54, 0.12));
-  transition: transform 0.4s ease;
-}
 
-.laptop-mockup-img:hover {
-  transform: translateY(-5px) scale(1.02);
+  @media (max-width: 1200px) {
+    max-width: 480px;
+  }
+
+  @media (max-width: 992px) {
+    max-width: 420px;
+  }
+
+  @media (max-width: 768px) {
+    max-width: 360px;
+  }
+
+  @media (max-width: 480px) {
+    max-width: 280px;
+  }
 }
 
 /* Workflow Steps Bar (Seamlessly integrated inside header card) */
@@ -357,11 +419,13 @@
 }
 
 .step-badge.blue {
-  background: var(--brand-badge-blue);
+  background: var(--brand-navy, #0F2147);
+  color: #ffffff !important;
 }
 
 .step-badge.pink {
-  background: var(--brand-badge-pink);
+  background: var(--brand-red, #D92334);
+  color: #ffffff !important;
 }
 
 .step-icon-wrapper {
@@ -708,7 +772,7 @@
 }
 
 .submit-btn {
-  background: var(--brand-pink-gradient);
+  background: linear-gradient(135deg, #0F2147 0%, #D92334 100%);
   color: #FFFFFF;
   border: none;
   border-radius: 50px;
@@ -720,7 +784,7 @@
   align-items: center;
   justify-content: center;
   gap: 14px;
-  box-shadow: 0 12px 32px rgba(230, 0, 92, 0.35);
+  box-shadow: 0 12px 32px rgba(217, 35, 52, 0.35);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   min-width: 300px;
   cursor: pointer;
@@ -728,7 +792,7 @@
 
 .submit-btn:hover {
   transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 18px 42px rgba(230, 0, 92, 0.48);
+  box-shadow: 0 18px 42px rgba(217, 35, 52, 0.48);
 }
 
 .submit-btn:active {

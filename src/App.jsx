@@ -555,12 +555,14 @@ Automated notification from Corporate Support Portal.
         <div className="hero-layout">
           <div className="hero-text-content">
             <h1 className="main-title">
-              Corporate Communication & <br />
-              Support <span className="title-highlight">Request Form</span>
+              Corporate <br />
+              Communication &amp; <br />
+              Support <br />
+              <span className="title-highlight">Request Form</span>
             </h1>
             <p className="hero-subtitle">
-              Share your requirement in a few simple steps. <br />
-              Our team will review and get back to you.
+              <span>Share your requirement in a few simple steps.</span>
+              <span>Our team will review and get back to you.</span>
             </p>
           </div>
 
