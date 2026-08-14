@@ -355,7 +355,7 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
-  overflow: hidden;
+  overflow: visible;
   transition: all 0.3s ease;
 
   @media (max-width: 640px) {
@@ -373,6 +373,8 @@
   height: 3px;
   background: linear-gradient(90deg, #0038FF 0%, #FF5A6E 100%);
   opacity: 0.85;
+  border-top-left-radius: var(--radius-card);
+  border-top-right-radius: var(--radius-card);
 }
 
 /* Subtle Corner Watermark on Cards */
@@ -2255,6 +2257,222 @@
     font-size: 19px;
   }
 }
+
+/* ==========================================================================
+   MOTION DESIGN SYSTEM & MICRO-INTERACTIONS
+   ========================================================================== */
+
+/* GPU-accelerated field focus glow & border transition */
+.form-input,
+.form-select,
+.form-textarea {
+  transition: border-color 0.18s cubic-bezier(0.25, 0.1, 0.25, 1),
+              box-shadow 0.18s cubic-bezier(0.25, 0.1, 0.25, 1),
+              background-color 0.18s ease,
+              transform 0.18s cubic-bezier(0.25, 0.1, 0.25, 1);
+  will-change: border-color, box-shadow, transform;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  border-color: #0038FF !important;
+  box-shadow: 0 0 0 3px rgba(0, 56, 255, 0.12), 0 2px 8px rgba(0, 56, 255, 0.06) !important;
+  outline: none !important;
+}
+
+.step-badge.green-complete {
+  background: #10B981 !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25) !important;
+  font-weight: 900 !important;
+}
+
+.step-icon-wrapper.green {
+  background: #DCFCE7 !important;
+  color: #10B981 !important;
+}
+
+.file-dropzone.upload-success-glow {
+  border-color: #10B981 !important;
+  background-color: #F0FDF4 !important;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.18), 0 8px 24px rgba(16, 185, 129, 0.12) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* Rotating Gradient Border Effect on Dragging */
+@keyframes gradientRotate {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.file-dropzone.dragging {
+  border-color: transparent !important;
+  background: linear-gradient(135deg, #EFF6FF 0%, #EEF2FF 100%) !important;
+  box-shadow: 0 12px 32px rgba(0, 56, 255, 0.18) !important;
+  transform: scale(1.02) !important;
+  position: relative;
+}
+
+.file-dropzone.dragging::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  padding: 2px;
+  background: linear-gradient(90deg, #0038FF, #8B5CF6, #FF5A6E, #0038FF);
+  background-size: 300% 300%;
+  animation: gradientRotate 2.5s ease infinite;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Pulsing Green Indicator Dot for File Cards */
+@keyframes greenPing {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+.status-ping-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #10B981;
+  border-radius: 50%;
+  display: inline-block;
+  animation: greenPing 1.8s infinite;
+}
+
+/* File Dropzone Drag & Hover Micro-Interactions */
+.file-dropzone {
+  transition: border-color 0.25s cubic-bezier(0.25, 0.1, 0.25, 1),
+              background-color 0.25s ease,
+              box-shadow 0.25s ease,
+              transform 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.file-dropzone:hover {
+  border-color: #0038FF;
+  background-color: #F8FAFC;
+  box-shadow: 0 6px 20px rgba(0, 56, 255, 0.08);
+}
+
+.file-dropzone.dragging {
+  border-color: #0038FF;
+  background-color: #EFF6FF;
+  transform: scale(1.01);
+  box-shadow: 0 8px 24px rgba(0, 56, 255, 0.12);
+}
+
+/* File list item entrance styling */
+.file-item {
+  transition: transform 0.2s cubic-bezier(0.25, 0.1, 0.25, 1),
+              box-shadow 0.2s ease;
+}
+
+.file-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Submit Button & Micro-Interactions */
+.submit-btn {
+  transition: background-color 0.2s ease,
+              box-shadow 0.2s cubic-bezier(0.25, 0.1, 0.25, 1),
+              transform 0.15s cubic-bezier(0.25, 0.1, 0.25, 1);
+  will-change: transform, box-shadow;
+}
+
+.submit-btn:hover:not(:disabled) {
+  box-shadow: 0 8px 24px rgba(0, 56, 255, 0.35);
+}
+
+.submit-btn:active:not(:disabled) {
+  transform: translateY(1px) scale(0.98);
+}
+
+/* Priority Option Radio Buttons Hover */
+.radio-option {
+  transition: transform 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.radio-option:hover {
+  transform: translateY(-1px);
+}
+
+/* Theo Animated Illustration Pack Floating Motion */
+@keyframes theoHeroFloat {
+  0% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(1deg);
+  }
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+}
+
+.laptop-mockup-img {
+  animation: theoHeroFloat 6s ease-in-out infinite !important;
+  will-change: transform;
+}
+
+/* Ambient Watermark Breathing Pulse (Step 8) */
+@keyframes infinityBreathing {
+  0% {
+    transform: translateY(0px);
+    opacity: 0.08;
+  }
+  50% {
+    transform: translateY(-5px);
+    opacity: 0.12;
+  }
+  100% {
+    transform: translateY(0px);
+    opacity: 0.08;
+  }
+}
+
+.hero-watermark-overlay {
+  animation: infinityBreathing 10s ease-in-out infinite !important;
+  will-change: transform, opacity;
+}
+
+/* Accessibility: Respect user prefers-reduced-motion settings */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .hero-watermark-overlay {
+    animation: none !important;
+  }
+}
+
+
 
 
 

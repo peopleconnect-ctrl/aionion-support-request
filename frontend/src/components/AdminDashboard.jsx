@@ -1,5 +1,14 @@
 import { useState, useEffect, useRef } from 'react'
+import { motion, AnimatePresence } from 'motion/react'
 import { supabase } from '../lib/supabase'
+import AnimatedButton from './AnimatedButton'
+import {
+  modalOverlayVariants,
+  modalContentVariants,
+  pageTransitionVariants,
+  cardHoverVariants
+} from '../animations/variants'
+import { DURATION, EASING } from '../animations/transitions'
 import logoImg from '../assets/logo.png'
 
 export default function AdminDashboard({ onSwitchToForm, onLogout }) {
@@ -1022,9 +1031,22 @@ Aionion Capital
       </main>
 
       {/* Ticket Management & Delivery Modal */}
-      {selectedReq && (
-        <div className="modal-overlay">
-          <div className="modal-content modal-large">
+      <AnimatePresence mode="wait">
+        {selectedReq && (
+          <motion.div
+            className="modal-overlay"
+            variants={modalOverlayVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
+            <motion.div
+              className="modal-content modal-large"
+              variants={modalContentVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
             <div className="modal-header-row">
               <div>
                 <h2>Ticket Management: {selectedReq.reference_id}</h2>
@@ -1257,18 +1279,32 @@ Aionion Capital
                 </div>
               </div>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
+      </AnimatePresence>
 
       {/* IN-APP FILE PREVIEW MODAL */}
-      {previewModalFile && (
-        <div className="modal-overlay" style={{ zIndex: 10000 }} onClick={() => setPreviewModalFile(null)}>
-          <div
-            className="modal-content"
-            style={{ maxWidth: '900px', width: '92%', height: '85vh', padding: '20px', display: 'flex', flexDirection: 'column', background: '#ffffff', borderRadius: '16px' }}
-            onClick={(e) => e.stopPropagation()}
+      <AnimatePresence mode="wait">
+        {previewModalFile && (
+          <motion.div
+            className="modal-overlay"
+            style={{ zIndex: 10000 }}
+            onClick={() => setPreviewModalFile(null)}
+            variants={modalOverlayVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
           >
+            <motion.div
+              className="modal-content"
+              style={{ maxWidth: '900px', width: '92%', height: '85vh', padding: '20px', display: 'flex', flexDirection: 'column', background: '#ffffff', borderRadius: '16px' }}
+              onClick={(e) => e.stopPropagation()}
+              variants={modalContentVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px', marginBottom: '12px' }}>
               <h3 style={{ margin: 0, fontSize: '17px', fontWeight: '800', color: '#0f172a' }}>
                 📄 {previewModalFile.name}
@@ -1303,9 +1339,10 @@ Aionion Capital
                 Close Preview
               </button>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
+      </AnimatePresence>
     </div>
   )
 }

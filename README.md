@@ -1,16 +1,65 @@
-# React + Vite
+# Aionion Support Request Portal
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A modern, responsive support ticket request system with React + Vite frontend and Frappe Cloud / API backend integration.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 📂 Segregated Folder Structure
 
-## React Compiler
+```
+aionion-support-request/
+├── frontend/                     <-- React + Vite Custom User Interface
+│   ├── public/                   <-- Static public assets
+│   ├── src/                      <-- React components, views & API services
+│   │   ├── components/           <-- UI components
+│   │   ├── lib/                  <-- API helpers (Frappe REST client)
+│   │   ├── App.jsx               <-- Main Application UI
+│   │   └── main.jsx
+│   ├── index.html
+│   ├── vite.config.js
+│   └── package.json
+│
+├── backend/                      <-- Backend Services & Custom Frappe App
+│   ├── frappe_app/              <-- Frappe Custom App & DocType Definitions
+│   │   ├── doctype/              <-- Support Request DocType schema & python controller
+│   │   ├── workflow/             <-- Manager Approval workflow configuration
+│   │   └── README.md             <-- Frappe Cloud deployment guide
+│   │
+│   └── legacy_services/         <-- Backup Serverless & SQL Scripts
+│       ├── api/                  <-- Vercel serverless API handlers
+│       ├── google-apps-script.js
+│       └── supabase-schema.sql
+│
+├── package.json                  <-- Root workspace runner
+└── README.md
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the Oxlint configuration
+## 🛠️ Quick Start
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+### Frontend (Development)
+
+Run from the root directory:
+
+```bash
+# Start Vite development server
+npm run dev
+
+# Build production bundle
+npm run build
+```
+
+Or navigate into `frontend/` directory:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+---
+
+## 🔒 Backend Integration
+
+See [backend/frappe_app/README.md](file:///e:/aionion-support-request/backend/frappe_app/README.md) for detailed steps on connecting Frappe Cloud to the React frontend.

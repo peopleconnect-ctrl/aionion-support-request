@@ -1,0 +1,227 @@
+{
+  "actions": [],
+  "allow_rename": 1,
+  "creation": "2026-08-07 10:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "details_section",
+    "reference_id",
+    "full_name",
+    "employee_code",
+    "email",
+    "contact_number",
+    "column_break_1",
+    "department",
+    "branch_location",
+    "request_category",
+    "priority_level",
+    "required_by",
+    "request_details_section",
+    "target_audience",
+    "purpose_of_request",
+    "approval_section",
+    "approver_name",
+    "approver_email",
+    "approver_department",
+    "workflow_section",
+    "workflow_state",
+    "status",
+    "assigned_to",
+    "completion_notes",
+    "attachments_section",
+    "reference_file_urls",
+    "approval_file_urls",
+    "deliverable_file_urls"
+  ],
+  "fields": [
+    {
+      "fieldname": "details_section",
+      "fieldtype": "Section Break",
+      "label": "Requester Details"
+    },
+    {
+      "fieldname": "reference_id",
+      "fieldtype": "Data",
+      "in_list_view": 1,
+      "label": "Reference ID",
+      "reqd": 1,
+      "unique": 1
+    },
+    {
+      "fieldname": "full_name",
+      "fieldtype": "Data",
+      "in_list_view": 1,
+      "label": "Full Name",
+      "reqd": 1
+    },
+    {
+      "fieldname": "employee_code",
+      "fieldtype": "Data",
+      "label": "Employee Code"
+    },
+    {
+      "fieldname": "email",
+      "fieldtype": "Data",
+      "label": "Email",
+      "reqd": 1
+    },
+    {
+      "fieldname": "contact_number",
+      "fieldtype": "Data",
+      "label": "Contact Number"
+    },
+    {
+      "fieldname": "column_break_1",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "department",
+      "fieldtype": "Link",
+      "in_list_view": 1,
+      "label": "Department",
+      "options": "Department",
+      "reqd": 1
+    },
+    {
+      "fieldname": "branch_location",
+      "fieldtype": "Data",
+      "label": "Branch Location"
+    },
+    {
+      "fieldname": "request_category",
+      "fieldtype": "Select",
+      "in_list_view": 1,
+      "label": "Request Category",
+      "options": "IT Support\nHR Query\nFinance & Expenses\nMarketing Asset\nOperations\nOther",
+      "reqd": 1
+    },
+    {
+      "fieldname": "priority_level",
+      "fieldtype": "Select",
+      "label": "Priority Level",
+      "options": "Low\nNormal\nHigh\nUrgent",
+      "default": "Normal"
+    },
+    {
+      "fieldname": "required_by",
+      "fieldtype": "Date",
+      "label": "Required By Date"
+    },
+    {
+      "fieldname": "request_details_section",
+      "fieldtype": "Section Break",
+      "label": "Request Details"
+    },
+    {
+      "fieldname": "target_audience",
+      "fieldtype": "Data",
+      "label": "Target Audience"
+    },
+    {
+      "fieldname": "purpose_of_request",
+      "fieldtype": "Small Text",
+      "label": "Purpose of Request",
+      "reqd": 1
+    },
+    {
+      "fieldname": "approval_section",
+      "fieldtype": "Section Break",
+      "label": "Manager Approval Information"
+    },
+    {
+      "fieldname": "approver_name",
+      "fieldtype": "Data",
+      "label": "Approver Name"
+    },
+    {
+      "fieldname": "approver_email",
+      "fieldtype": "Data",
+      "label": "Approver Email"
+    },
+    {
+      "fieldname": "approver_department",
+      "fieldtype": "Data",
+      "label": "Approver Department"
+    },
+    {
+      "fieldname": "workflow_section",
+      "fieldtype": "Section Break",
+      "label": "Status & Fulfillment"
+    },
+    {
+      "fieldname": "workflow_state",
+      "fieldtype": "Data",
+      "label": "Workflow State"
+    },
+    {
+      "fieldname": "status",
+      "fieldtype": "Select",
+      "in_list_view": 1,
+      "label": "Status",
+      "options": "Pending Manager Approval\nApproved\nIn Progress\nCompleted\nRejected",
+      "default": "Pending Manager Approval"
+    },
+    {
+      "fieldname": "assigned_to",
+      "fieldtype": "Link",
+      "label": "Assigned To",
+      "options": "User"
+    },
+    {
+      "fieldname": "completion_notes",
+      "fieldtype": "Small Text",
+      "label": "Completion Notes"
+    },
+    {
+      "fieldname": "attachments_section",
+      "fieldtype": "Section Break",
+      "label": "Attachments & Deliverables"
+    },
+    {
+      "fieldname": "reference_file_urls",
+      "fieldtype": "JSON",
+      "label": "Reference Files"
+    },
+    {
+      "fieldname": "approval_file_urls",
+      "fieldtype": "JSON",
+      "label": "Approval Files"
+    },
+    {
+      "fieldname": "deliverable_file_urls",
+      "fieldtype": "JSON",
+      "label": "Deliverable Files"
+    }
+  ],
+  "index_web_pages_for_search": 1,
+  "links": [],
+  "modified": "2026-08-07 10:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Aionion Support",
+  "name": "Support Request",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "create": 1,
+      "delete": 0,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "System Manager",
+      "share": 1,
+      "write": 1
+    },
+    {
+      "create": 1,
+      "delete": 0,
+      "read": 1,
+      "role": "Employee",
+      "write": 0
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC"
+}
